@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTrade — Cart</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.main{position:relative;z-index:1;padding-top:84px;padding-bottom:calc(var(--bottom-nav-h,76px)+24px)}
+.cart-wrap{max-width:720px;margin:0 auto;padding:0 20px}
+
+/* Page title */
+.cart-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.cart-count-badge{font-size:12px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#020617;padding:4px 14px;border-radius:999px}
+
+/* Cart item card */
+.cart-item{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:22px;
+  padding:16px;display:flex;align-items:center;gap:16px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  margin-bottom:14px;transition:all .28s cubic-bezier(.34,1.56,.64,1);
+  animation:cartItemIn .35s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes cartItemIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.cart-item:hover{border-color:rgba(34,211,238,.18);box-shadow:0 8px 28px rgba(0,0,0,.2)}
+[dir=rtl] .cart-item{flex-direction:row-reverse}
+
+.cart-item-img{width:76px;height:76px;border-radius:16px;object-fit:cover;
+  flex-shrink:0;border:1px solid var(--glass-border);background:var(--navy-3)}
+
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:15px;font-weight:700;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.cart-item-cat{font-size:11px;color:var(--text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em}
+.cart-item-price{font-size:17px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+
+.cart-item-controls{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0}
+
+/* Quantity control */
+.qty-row{display:flex;align-items:center;gap:0;background:var(--glass);
+  border:1px solid var(--glass-border);border-radius:12px;overflow:hidden}
+.qty-btn{width:34px;height:34px;border:none;cursor:pointer;
+  background:transparent;color:var(--text-primary);font-size:18px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;font-family:inherit;flex-shrink:0}
+.qty-btn:hover{background:var(--glass-strong);color:var(--accent)}
+.qty-btn:active{transform:scale(.86)}
+.qty-num{width:36px;text-align:center;font-size:14px;font-weight:800;
+  color:var(--text-primary);user-select:none;font-variant-numeric:tabular-nums}
+
+/* Remove button */
+.remove-btn{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.22);
+  display:flex;align-items:center;justify-content:center;color:#f87171;
+  font-size:14px;transition:all .22s cubic-bezier(.34,1.56,.64,1)}
+.remove-btn:hover{background:rgba(239,68,68,.28);transform:scale(1.10)}
+.remove-btn:active{transform:scale(.84)}
+
+/* Summary card */
+.summary-card{background:var(--card-bg);border:1px solid var(--glass-border);
+  border-radius:24px;padding:24px 22px;
+  backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);
+  margin-top:8px;animation:cartItemIn .4s cubic-bezier(.34,1.56,.64,1) .15s both}
+.summary-row{display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--glass-border);font-size:14px}
+.summary-row:last-of-type{border-bottom:none}
+.summary-label{color:var(--text-secondary);font-weight:500}
+.summary-value{font-weight:700}
+.summary-total{font-size:18px;font-weight:800;color:var(--accent)}
+
+/* Empty cart */
+.empty-cart{text-align:center;padding:72px 24px;color:var(--text-secondary)}
+.empty-cart-icon{font-size:64px;margin-bottom:16px;animation:floatIcon 3s ease-in-out infinite}
+@keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.empty-cart-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:8px}
+.empty-cart-sub{font-size:14px;line-height:1.7;margin-bottom:28px}
+
+/* Checkout overlay */
+.co-overlay{position:fixed;inset:0;z-index:900;background:rgba(2,6,23,.88);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.co-overlay.open{opacity:1;pointer-events:all}
+.co-card{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:28px;
+  width:100%;max-width:460px;padding:32px 28px;
+  transform:scale(.92);transition:transform .38s cubic-bezier(.34,1.56,.64,1);
+  max-height:90vh;overflow-y:auto;margin:16px}
+.co-overlay.open .co-card{transform:scale(1)}
+.co-title{font-size:20px;font-weight:800;margin-bottom:22px;letter-spacing:-.02em}
+.co-input{width:100%;padding:12px 16px;background:var(--glass);
+  border:1px solid var(--glass-border);border-radius:14px;
+  outline:none;font-size:14px;color:var(--text-primary);font-family:inherit;
+  margin-bottom:10px;caret-color:var(--accent);transition:border-color .22s,background .22s}
+.co-input::placeholder{color:var(--text-secondary);font-family:inherit}
+.co-input:focus{border-color:rgba(34,211,238,.45);background:var(--glass-strong)}
+.co-label{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--text-secondary);margin-bottom:8px;margin-top:14px;display:block}
+.co-divider{height:1px;background:var(--glass-border);margin:16px 0}
+.co-total-row{display:flex;justify-content:space-between;align-items:center;
+  font-size:16px;font-weight:800;padding:4px 0}
+.co-total-val{color:var(--accent);font-size:20px}
+
+/* Success animation */
+.success-overlay{position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,.94);
+  backdrop-filter:blur(16px);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.success-overlay.open{opacity:1;pointer-events:all}
+.success-icon{font-size:80px;margin-bottom:20px;animation:successPop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes successPop{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.success-title{font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
+.success-sub{font-size:15px;color:var(--text-secondary);line-height:1.7;text-align:center;margin-bottom:32px}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="main">
+  <div class="cart-wrap">
+
+    <!-- HEADER ROW -->
+    <div class="cart-title-row">
+      <div>
+        <div class="page-title" data-t="cart_title">Your Cart</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px" id="cartSubtitle">Loading…</div>
+      </div>
+      <div class="cart-count-badge" id="cartCountBadge">0 items</div>
+    </div>
+
+    <!-- CART ITEMS -->
+    <div id="cartItems"></div>
+
+    <!-- SUMMARY -->
+    <div id="cartSummary" style="display:none">
+      <div class="summary-card">
+        <div class="summary-row">
+          <span class="summary-label">Subtotal</span>
+          <span class="summary-value" id="subtotalVal">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Shipping</span>
+          <span class="summary-value">$5.00</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label" style="font-size:16px;font-weight:700;color:var(--text-primary)">Total</span>
+          <span class="summary-total" id="totalVal">$5.00</span>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-grad" style="flex:1;padding:14px;font-size:15px" id="checkoutBtn">
+            🛒 Checkout
+          </button>
+          <button class="btn-outline" style="padding:14px 24px;font-size:14px" onclick="clearCart()">
+            🗑 Clear Cart
+          </button>
+        </div>
+        <div style="margin-top:14px;text-align:center">
+          <a href="market.html" style="font-size:13px;color:var(--accent);font-weight:600;text-decoration:none">
+            ← Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="co-overlay" id="coOverlay" onclick="closeCheckout(event)">
+  <div class="co-card" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="co-title">Complete Purchase</div>
+      <button class="icon-btn" onclick="closeCheckout()">✕</button>
+    </div>
+    <div id="coItemsList"></div>
+    <div class="co-divider"></div>
+    <label class="co-label">Delivery Information</label>
+    <input class="co-input" id="coName" placeholder="Full name" autocomplete="name"/>
+    <input class="co-input" id="coAddr" placeholder="Delivery address" autocomplete="street-address"/>
+    <input class="co-input" id="coCity" placeholder="City" autocomplete="address-level2"/>
+    <div class="co-divider"></div>
+    <div class="co-total-row">
+      <span style="color:var(--text-secondary)">Total to pay</span>
+      <span class="co-total-val" id="coTotalDisplay">$0.00</span>
+    </div>
+    <div style="height:18px"></div>
+    <button class="btn-grad" style="width:100%;padding:14px;font-size:15px" id="payBtn"
+            onclick="confirmOrder()">✅ Confirm &amp; Pay</button>
+    <button class="btn-outline" style="width:100%;margin-top:10px;justify-content:center"
+            onclick="closeCheckout()">Cancel</button>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">Order Placed!</div>
+  <div class="success-sub">Your order has been confirmed.<br>We'll deliver it to you soon.</div>
+  <button class="btn-grad" style="padding:14px 36px;font-size:15px"
+          onclick="document.getElementById('successOverlay').classList.remove('open');window.location.href='home.html'">
+    Back to Home
+  </button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script>
+// ─── CART HELPERS ────────────────────────────────────────────────
+const CART_KEY = 'eco_cart';  // ← matches market.html localStorage key
+
+function getCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveCart(items) {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  updateCartBadgeAll();
+}
+
+/** Called from market.html — exported to window */
+window.addToCart = function(product) {
+  const cart = getCart();
+  const existing = cart.find(i => i.id === product.id);
+  if (existing) {
+    // support both field names
+    existing.quantity = ((existing.quantity || existing.qty) || 1) + 1;
+    existing.qty      = existing.quantity;
+  } else {
+    cart.push({
+      id:       product.id,
+      name:     product.name     || product.nameAr || 'Product',
+      nameAr:   product.nameAr   || product.name   || '',
+      price:    parseFloat(String(product.price || 0).replace('$', '')),
+      image:    product.imageUrl || product.img    || '',
+      category: product.category || product.cat   || '',
+      quantity: 1,
+      qty:      1,
+    });
+  }
+  saveCart(cart);
+  showToast('🛒 Added to cart!');
+};
+
+function removeFromCart(id) {
+  saveCart(getCart().filter(i => i.id !== id));
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  const current = item.quantity ?? item.qty ?? 1;
+  const next    = Math.max(1, current + delta);
+  item.quantity = next;   // canonical field (market.html)
+  item.qty      = next;   // legacy alias
+  saveCart(cart);
+  renderCart();
+}
+
+function clearCart() {
+  if (!confirm('Remove all items from cart?')) return;
+  saveCart([]);
+  renderCart();
+}
+
+function cartTotal(cart) {
+  return cart.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
+}
+
+/** Update every cart badge icon on the page (shared via window) */
+window.updateCartBadgeAll = function() {
+  const count = getCart().reduce((s, i) => s + (i.qty || 1), 0);
+  document.querySelectorAll('.cart-badge').forEach(el => {
+    el.textContent = count;
+    el.style.display = count > 0 ? 'flex' : 'none';
+  });
+};
+
+function renderCart() {
+  const cart    = getCart();
+  const lang    = getLang();
+  const itemsEl = document.getElementById('cartItems');
+  const sumEl   = document.getElementById('cartSummary');
+  const badge   = document.getElementById('cartCountBadge');
+  const subEl   = document.getElementById('cartSubtitle');
+
+  // Normalize field names — market.html uses .quantity/.image, old addToCart used .qty/.img
+  const normalized = cart.map(i => ({
+    ...i,
+    qty:   i.quantity ?? i.qty ?? 1,
+    img:   i.image    || i.img || '',
+  }));
+
+  const totalItems = normalized.reduce((s, i) => s + i.qty, 0);
+  badge.textContent = totalItems + (totalItems === 1 ? ' item' : ' items');
+  subEl.textContent = cart.length
+    ? `${cart.length} product${cart.length > 1 ? 's' : ''} in your cart`
+    : 'Your cart is empty';
+
+  itemsEl.innerHTML = '';
+  updateCartBadgeAll();
+
+  if (!normalized.length) {
+    sumEl.style.display = 'none';
+    itemsEl.innerHTML = `
+      <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <div class="empty-cart-title">Your Cart is Empty</div>
+        <div class="empty-cart-sub">Browse the market and add items you love.</div>
+        <a href="market.html" class="btn-grad" style="display:inline-flex;padding:13px 32px;font-size:14px;text-decoration:none">
+          Browse Market →
+        </a>
+      </div>`;
+    return;
+  }
+
+  normalized.forEach((item, idx) => {
+    const name = lang === 'ar' ? (item.nameAr || item.name) : item.name;
+    const row  = document.createElement('div');
+    row.className = 'cart-item';
+    row.style.animationDelay = idx * 55 + 'ms';
+    row.innerHTML = `
+      <img class="cart-item-img"
+           src="${escHtml(item.img || 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=200&q=70')}"
+           alt="${escHtml(name)}" loading="lazy"/>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${escHtml(name)}</div>
+        <div class="cart-item-cat">${escHtml(item.category || '')}</div>
+        <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}
+          <span style="font-size:12px;font-weight:400;color:var(--text-secondary)">
+            ($${item.price.toFixed(2)} × ${item.qty})
+          </span>
+        </div>
+      </div>
+      <div class="cart-item-controls">
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty('${item.id}', -1)" aria-label="Decrease">−</button>
+          <div class="qty-num">${item.qty}</div>
+          <button class="qty-btn" onclick="changeQty('${item.id}', 1)"  aria-label="Increase">+</button>
+        </div>
+        <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Remove">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+      </div>`;
+    itemsEl.appendChild(row);
+  });
+
+  // Summary
+  const sub   = normalized.reduce((s, i) => s + i.price * i.qty, 0);
+  const total = sub + 5;
+  document.getElementById('subtotalVal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('totalVal').textContent    = '$' + total.toFixed(2);
+  sumEl.style.display = 'block';
+}
+
+// ─── CHECKOUT ────────────────────────────────────────────────────
+document.getElementById('checkoutBtn').addEventListener('click', () => {
+  const cart = getCart();
+  if (!cart.length) return;
+  const lang = getLang();
+
+  // Build items list in modal
+  const list = document.getElementById('coItemsList');
+  list.innerHTML = '';
+  cart.forEach(item => {
+    const name = lang === 'ar' ? (item.nameAr || item.name) : item.name;
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--glass-border)';
+    el.innerHTML = `<span style="color:var(--text-secondary)">${escHtml(name)} × ${item.qty}</span>
+                    <span style="font-weight:700">$${(item.price * item.qty).toFixed(2)}</span>`;
+    list.appendChild(el);
+  });
+
+  const total = cartTotal(cart) + 5;
+  document.getElementById('coTotalDisplay').textContent = '$' + total.toFixed(2);
+  document.getElementById('coOverlay').classList.add('open');
+});
+
+function closeCheckout(e) {
+  if (e && e.target !== document.getElementById('coOverlay')) return;
+  document.getElementById('coOverlay').classList.remove('open');
+}
+
+function confirmOrder() {
+  const name = document.getElementById('coName').value.trim();
+  const addr = document.getElementById('coAddr').value.trim();
+  if (!name || !addr) { showToast('⚠️ Please fill in your name and address.'); return; }
+
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+
+  setTimeout(() => {
+    // Simulate order placement
+    saveCart([]);              // clear cart
+    renderCart();
+    document.getElementById('coOverlay').classList.remove('open');
+    document.getElementById('successOverlay').classList.add('open');
+    btn.disabled = false;
+    btn.textContent = '✅ Confirm & Pay';
+    document.getElementById('coName').value = '';
+    document.getElementById('coAddr').value = '';
+    document.getElementById('coCity').value = '';
+  }, 1500);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+buildPageHeader({});
+buildBottomNav('market');
+renderCart();
+applyTranslations();
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTrade — Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.main{position:relative;z-index:1;padding-top:84px;padding-bottom:calc(var(--bottom-nav-h,76px)+24px)}
+.profile-wrap{max-width:860px;margin:0 auto;padding:0 20px}
+
+/* PROFILE CARD */
+.profile-card{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:28px;padding:32px 28px;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 24px 60px rgba(0,0,0,.25);animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) both;margin-bottom:24px}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.profile-card{border-radius:20px;padding:22px 18px}}
+
+/* AVATAR */
+.avatar-section{display:flex;flex-direction:column;align-items:center;margin-bottom:28px}
+.avatar-ring{position:relative;width:90px;height:90px;cursor:pointer}
+.avatar-circle{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#020617;overflow:hidden;border:3px solid var(--glass-border);transition:all .3s}
+.avatar-circle img{width:100%;height:100%;object-fit:cover}
+.avatar-ring:hover .avatar-circle{box-shadow:0 0 0 3px var(--accent)}
+.online-badge{position:absolute;bottom:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#22c55e;border:3px solid var(--navy);animation:pls 2.4s ease-in-out infinite}
+@keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+.prof-name{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-top:12px}
+.prof-email{font-size:13px;color:var(--text-secondary);margin-top:3px}
+.prof-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);background:var(--glass);border:1px solid var(--glass-border);border-radius:999px;padding:4px 14px;margin-top:8px}
+
+/* INFO ROWS */
+.info-row{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--glass-border);gap:12px}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-secondary);flex-shrink:0;padding-top:2px;min-width:90px}
+.info-val{font-size:14px;font-weight:600;color:var(--text-primary);text-align:end;word-break:break-all}
+[dir=rtl] .info-val{text-align:start}
+
+/* EDIT INLINE */
+.edit-row{display:flex;gap:8px;align-items:center;margin-top:8px;width:100%}
+.edit-inp{flex:1;padding:9px 13px;background:var(--glass);border:1px solid var(--glass-border);border-radius:11px;outline:none;font-size:13px;color:var(--text-primary);font-family:inherit;caret-color:var(--accent)}
+.edit-inp:focus{border-color:rgba(34,211,238,.45)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-secondary);background:transparent;transition:all .22s}
+.tab.active{background:var(--card-bg);color:var(--text-primary);box-shadow:0 2px 10px rgba(0,0,0,.2)}
+
+/* GRID */
+.mini-grid{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:640px){.mini-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:380px){.mini-grid{grid-template-columns:1fr 1fr}}
+
+/* QUICK LINKS */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.quick-card{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:20px;padding:18px;text-decoration:none;color:var(--text-primary);cursor:pointer;backdrop-filter:blur(16px);transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+.quick-card:hover{border-color:rgba(34,211,238,.2);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.quick-card:active{transform:scale(.96)}
+.qc-icon{font-size:26px;margin-bottom:8px}
+.qc-title{font-size:13px;font-weight:700}
+.qc-sub{font-size:11px;color:var(--text-secondary);margin-top:2px}
+
+/* EMPTY STATE */
+.section-empty{text-align:center;padding:44px 20px;color:var(--text-secondary)}
+.section-empty .ei{font-size:40px;margin-bottom:10px}
+
+/* DELETE BUTTON on product card */
+.prod-delete-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;  /* opposite corner from fav button */
+  width: 26px; height: 26px;
+  border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(239,68,68,.75);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff; font-weight: 700;
+  transition: all .22s cubic-bezier(.34,1.56,.64,1);
+  z-index: 3;
+}
+.prod-delete-btn:hover  { background: rgba(239,68,68,1); transform: scale(1.12); }
+.prod-delete-btn:active { transform: scale(.82); }
+[dir=rtl] .prod-delete-btn { left: auto; right: 8px; }
+
+/* SKELETON */
+.skel{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;aspect-ratio:.85;animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* LOGOUT */
+.btn-danger{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.24);color:#f87171;border-radius:14px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .22s;width:100%}
+.btn-danger:hover{background:rgba(239,68,68,.24)}
+.btn-danger:active{transform:scale(.95)}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="main">
+  <div class="profile-wrap" id="profileContent">
+    <div style="text-align:center;padding:80px 20px;color:var(--text-secondary)" data-t="loading">Loading…</div>
+  </div>
+</div>
+
+<div>ljjgfdjafob</div>
+<div>ljjgfdjafob</div>
+<div>ljjgfdjafob</div>
+<div>ljjgfdjafob</div>
+<div>ljjgfdjafob</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+//  profile.html  ·  All Functions
+// ═══════════════════════════════════════════════════════
+
+let currentUser   = null;
+let currentTab    = 'listings';
+let myProducts    = [];
+let myFavs        = [];
+let unsubListings = null;
+
+// ─────────────────────────────────────────────────────────────────
+//  1. FETCH USER DATA FROM FIRESTORE  (replaces "Loading…")
+//     Reads /users/{uid} and fills avatar, name, email, phone.
+// ─────────────────────────────────────────────────────────────────
+async function fetchAndRenderProfile(user) {
+  const snap = await db.collection('users').doc(user.uid).get();
+  const ud   = snap.exists ? snap.data() : {};
+
+  const username = ud.username || ud.displayName || user.displayName
+                || (user.email ? user.email.split('@')[0] : 'User');
+  const email    = ud.email    || user.email    || 'Anonymous';
+  const photoURL = ud.photoURL || user.photoURL || '';
+  const phone    = ud.phone    || '';
+  const joined   = ud.createdAt && ud.createdAt.toDate
+                   ? ud.createdAt.toDate().toLocaleDateString() : '—';
+
+  const content = document.getElementById('profileContent');
+  content.innerHTML = `
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar-ring">
+          <div class="avatar-circle" id="avCircle">
+            ${photoURL ? `<img src="${escHtml(photoURL)}" alt=""/>` : `<span>${avatarLetter(username)}</span>`}
+          </div>
+          <div class="online-badge"></div>
+        </div>
+        <div class="prof-name" id="dispName">${escHtml(username)}</div>
+        <div class="prof-email">${escHtml(email)}</div>
+        ${phone ? `<div class="prof-email" style="margin-top:2px">📞 ${escHtml(phone)}</div>` : ''}
+        <div class="prof-badge">🗓 <span data-t="member_since">Member since</span> ${joined}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label" data-t="username">Username</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;flex:1;gap:6px">
+          <div class="info-val" id="unameDisplay">${escHtml(username)}</div>
+          <div class="edit-row" id="editRow" style="display:none">
+            <input class="edit-inp" id="editInp" value="${escHtml(username)}" maxlength="30" placeholder="New username"/>
+            <button class="btn-grad" style="padding:8px 16px;font-size:12px;flex-shrink:0" id="saveUname" data-t="save">Save</button>
+            <button class="btn-outline" style="padding:8px 14px;font-size:12px;flex-shrink:0" id="cancelEdit" data-t="cancel">Cancel</button>
+          </div>
+          <button class="btn-outline" style="padding:6px 14px;font-size:12px" id="editBtn" data-t="edit_username">Edit Username</button>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-label" data-t="email">Email</div>
+        <div class="info-val">${escHtml(email)}</div>
+      </div>
+      <div class="info-row" style="border-bottom:none">
+        <div class="info-label">UID</div>
+        <div class="info-val" style="font-size:11px;font-family:monospace">${user.uid.slice(0,16)}…</div>
+      </div>
+      <div style="margin-top:22px">
+        <button class="btn-danger" id="logoutBtn" data-t="logout">Logout</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabBar">
+      <button class="tab active" data-tab="listings"  data-t="my_listings">My Listings</button>
+      <button class="tab"        data-tab="favorites" data-t="my_favorites">My Favorites</button>
+      <button class="tab"        data-tab="search">🔍 Find Users</button>
+    </div>
+    <div id="tabContent">
+      <div style="text-align:center;padding:32px;color:var(--text-secondary)" data-t="loading">Loading…</div>
+    </div>
+
+    <div class="quick-grid">
+      <a href="market.html" class="quick-card"><div class="qc-icon">🛒</div><div class="qc-title" data-t="market">Market</div><div class="qc-sub">Browse listings</div></a>
+      <a href="add.html" class="quick-card"><div class="qc-icon">➕</div><div class="qc-title" data-t="add_product">Add Product</div><div class="qc-sub">List your tools</div></a>
+      <a href="chat.html" class="quick-card"><div class="qc-icon">💬</div><div class="qc-title" data-t="chat">Chat</div><div class="qc-sub">Your messages</div></a>
+      <a href="home.html" class="quick-card"><div class="qc-icon">🏠</div><div class="qc-title" data-t="home">Home</div><div class="qc-sub">Back to home</div></a>
+    </div>
+    <div style="height:12px"></div>
+  `;
+  applyTranslations();
+  wireProfileEvents(user);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  2. WIRE EVENTS  (edit username, logout, tabs)
+// ─────────────────────────────────────────────────────────────────
+function wireProfileEvents(user) {
+  document.getElementById('editBtn').addEventListener('click', () => {
+    document.getElementById('editRow').style.display = 'flex';
+    document.getElementById('editBtn').style.display = 'none';
+    document.getElementById('editInp').focus();
+  });
+  document.getElementById('cancelEdit').addEventListener('click', () => {
+    document.getElementById('editRow').style.display = 'none';
+    document.getElementById('editBtn').style.display = '';
+  });
+  document.getElementById('saveUname').addEventListener('click', async () => {
+    const newName = document.getElementById('editInp').value.trim();
+    if (!newName || newName.length < 2) { showToast('Name too short.'); return; }
+    try {
+      await db.collection('users').doc(user.uid).update({ username: newName });
+      await auth.currentUser.updateProfile({ displayName: newName });
+      document.getElementById('unameDisplay').textContent = newName;
+      document.getElementById('dispName').textContent     = newName;
+      document.getElementById('editRow').style.display   = 'none';
+      document.getElementById('editBtn').style.display   = '';
+      showToast(tr('update_success'));
+    } catch (e) { showToast(e.message); }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    if (!confirm(tr('logout_confirm'))) return;
+    if (unsubListings) { unsubListings(); unsubListings = null; }
+    await setOnlineStatus(user.uid, false);
+    await auth.signOut();
+    window.location.href = 'login.html';
+  });
+  document.getElementById('tabBar').addEventListener('click', e => {
+    const tab = e.target.closest('.tab'); if (!tab) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    renderTab();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  3. REAL-TIME LISTENER — current user's products only
+// ─────────────────────────────────────────────────────────────────
+function startMyProductsListener(uid) {
+  if (unsubListings) { unsubListings(); unsubListings = null; }
+  const query = db.collection('products').where('ownerId','==',uid).orderBy('createdAt','desc');
+  unsubListings = query.onSnapshot(snap => {
+    myProducts = snap.docs.map(d => ({ id:d.id, ...d.data(), img:d.data().imageUrl||d.data().img||'' }));
+    if (currentTab === 'listings') renderTab();
+  }, async () => {
+    try {
+      const s = await db.collection('products').where('userId','==',uid).orderBy('createdAt','desc').get();
+      myProducts = s.docs.map(d => ({ id:d.id, ...d.data(), img:d.data().imageUrl||d.data().img||'' }));
+      if (currentTab === 'listings') renderTab();
+    } catch (_) { myProducts = []; if (currentTab === 'listings') renderTab(); }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  4. DELETE PRODUCT  (Storage + Firestore)
+// ─────────────────────────────────────────────────────────────────
+async function deleteProduct(productId, imageUrl) {
+  if (!confirm('Delete this listing? This cannot be undone.')) return;
+  const btn = document.querySelector('[data-delete-id="' + productId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    if (imageUrl) {
+      try { await storage.refFromURL(imageUrl).delete(); }
+      catch (e) { console.warn('Storage delete skipped:', e.code); }
+    }
+    await db.collection('products').doc(productId).delete();
+    showToast('🗑 Listing deleted');
+  } catch (e) {
+    showToast('Delete failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '🗑'; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  5. LOAD FAVORITES (batched one-time read)
+// ─────────────────────────────────────────────────────────────────
+async function loadFavorites(ids) {
+  try {
+    const chunks = [];
+    for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i+10));
+    myFavs = [];
+    for (const chunk of chunks) {
+      const s = await db.collection('products')
+        .where(firebase.firestore.FieldPath.documentId(),'in',chunk).get();
+      s.docs.forEach(d => myFavs.push({ id:d.id, ...d.data(), img:d.data().imageUrl||'' }));
+    }
+  } catch (e) { myFavs = []; }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  6. USER SEARCH  (Firestore prefix query on username/displayName)
+//     Results show avatar, online status, and Message button.
+//     Clicking Message → chat.html?receiverId=UID
+// ─────────────────────────────────────────────────────────────────
+function renderSearchTab() {
+  const tc = document.getElementById('tabContent');
+  tc.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="position:relative">
+        <span style="position:absolute;top:50%;transform:translateY(-50%);
+                     left:14px;color:var(--text-secondary);font-size:16px;
+                     pointer-events:none">🔍</span>
+        <input id="userSearchInp"
+               style="width:100%;padding:12px 14px 12px 42px;
+                      background:var(--glass);border:1px solid var(--glass-border);
+                      border-radius:14px;outline:none;font-size:14px;
+                      color:var(--text-primary);font-family:inherit;caret-color:var(--accent);
+                      transition:border-color .22s,background .22s"
+               placeholder="Search users by name…" autocomplete="off"/>
+      </div>
+    </div>
+    <div id="userSearchResults"
+         style="color:var(--text-secondary);font-size:13px;text-align:center;padding:20px 0">
+      Type a name to search…
+    </div>`;
+  const inp = document.getElementById('userSearchInp');
+  inp.addEventListener('input', () => {
+    const q = inp.value.trim();
+    document.getElementById('userSearchResults').innerHTML = q.length < 2
+      ? '<span style="color:var(--text-secondary);font-size:13px">Type at least 2 characters…</span>'
+      : '<span style="color:var(--text-secondary);font-size:13px">Searching…</span>';
+    if (q.length >= 2) searchUsersByName(q);
+  });
+  inp.focus();
+}
+
+async function searchUsersByName(query) {
+  const resultsEl = document.getElementById('userSearchResults');
+  if (!resultsEl) return;
+  try {
+    const end = query.slice(0,-1) + String.fromCharCode(query.charCodeAt(query.length-1)+1);
+    const [sU, sD] = await Promise.all([
+      db.collection('users').orderBy('username').startAt(query).endAt(end).limit(15).get(),
+      db.collection('users').orderBy('displayName').startAt(query).endAt(end).limit(10).get(),
+    ]);
+    const seen = new Set(); const users = [];
+    [...sU.docs, ...sD.docs].forEach(doc => {
+      const d = doc.data();
+      if (!seen.has(d.uid) && d.uid !== currentUser.uid) { seen.add(d.uid); users.push(d); }
+    });
+    if (!users.length) {
+      resultsEl.innerHTML = `<div style="text-align:center;padding:28px 0;color:var(--text-secondary)"><div style="font-size:32px;margin-bottom:8px">🔍</div>No users found for "<strong>${escHtml(query)}</strong>"</div>`;
+      return;
+    }
+    resultsEl.innerHTML = '';
+    users.forEach(u => {
+      const name   = u.username || u.displayName || u.email || 'User';
+      const online = !!u.online;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:16px;background:var(--card-bg);border:1px solid var(--glass-border);margin-bottom:10px;cursor:pointer;transition:all .22s;backdrop-filter:blur(16px)';
+      row.addEventListener('mouseenter', () => { row.style.borderColor='rgba(34,211,238,.22)'; row.style.transform='translateY(-2px)'; });
+      row.addEventListener('mouseleave', () => { row.style.borderColor=''; row.style.transform=''; });
+      row.innerHTML = `
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#020617;border:2px solid var(--glass-border)">
+            ${u.photoURL ? `<img src="${escHtml(u.photoURL)}" style="width:100%;height:100%;object-fit:cover" alt=""/>` : avatarLetter(name)}
+          </div>
+          <div style="position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--navy);background:${online?'#22c55e':'var(--text-secondary)'}"></div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(name)}</div>
+          <div style="font-size:11px;font-weight:600;margin-top:2px;color:${online?'#22c55e':'var(--text-secondary)'}">${online?'● Online':'○ Offline'}</div>
+          ${u.email ? `<div style="font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(u.email)}</div>` : ''}
+        </div>
+        <button onclick="event.stopPropagation();window.location.href='chat.html?receiverId=${encodeURIComponent(u.uid)}'"
+                style="padding:8px 16px;border-radius:999px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#020617;font-size:12px;font-weight:700;font-family:inherit;flex-shrink:0;box-shadow:0 4px 14px rgba(34,211,238,.28);transition:all .22s">
+          💬 Message
+        </button>`;
+      row.addEventListener('click', () => window.location.href = `chat.html?receiverId=${encodeURIComponent(u.uid)}`);
+      resultsEl.appendChild(row);
+    });
+  } catch (e) {
+    resultsEl.innerHTML = `<span style="color:#f87171;font-size:13px">Search error: ${escHtml(e.message)}</span>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  7. RENDER TAB  (listings / favorites / search)
+// ─────────────────────────────────────────────────────────────────
+function renderTab() {
+  if (currentTab === 'search') { renderSearchTab(); return; }
+  const tc    = document.getElementById('tabContent');
+  const items = currentTab === 'listings' ? myProducts : myFavs;
+  if (!items.length) {
+    tc.innerHTML = `<div class="section-empty"><div class="ei">${currentTab==='listings'?'📦':'❤️'}</div><div data-t="no_listings">No listings yet.</div></div>`;
+    applyTranslations();
+    if (currentTab==='listings') tc.insertAdjacentHTML('beforeend', '<div style="margin-top:16px;text-align:center"><button class="btn-grad" onclick="window.location.href=\'add.html\'">+ Add Listing</button></div>');
+    return;
+  }
+  const grid = document.createElement('div'); grid.className = 'mini-grid';
+  items.forEach(p => {
+    const lang = getLang(); const name = lang==='ar'?(p.nameAr||p.name):p.name;
+    const card = document.createElement('div'); card.className = 'product-card';
+    const delHTML = currentTab==='listings'
+      ? `<button class="prod-delete-btn" data-delete-id="${p.id}" title="Delete" onclick="event.stopPropagation();deleteProduct('${p.id}','${escHtml(p.imageUrl||p.img||'')}')">🗑</button>` : '';
+    card.innerHTML = `
+      <div class="pc-img-wrap">
+        <img class="pc-img" src="${escHtml(p.img||p.imageUrl||'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&q=80')}" alt="${escHtml(name||'')}" loading="lazy"/>
+        ${delHTML}
+      </div>
+      <div class="pc-body">
+        <div class="pc-name" style="font-size:12px">${escHtml(name||'Product')}</div>
+        <div class="pc-price">$${String(p.price||0).replace('$','')}</div>
+      </div>`;
+    card.addEventListener('click', () => window.location.href = `market.html?product=${p.id}`);
+    addRipple(card); grid.appendChild(card);
+  });
+  tc.innerHTML = ''; tc.appendChild(grid);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  8. ENTRY POINT
+// ─────────────────────────────────────────────────────────────────
+requireAuth(async user => {
+  currentUser = user; setupPresence(user.uid);
+  await fetchAndRenderProfile(user);
+  const favSnap = await db.collection('favorites').doc(user.uid).get().catch(()=>null);
+  const favIds  = favSnap && favSnap.exists ? (favSnap.data().items||[]) : [];
+  if (favIds.length) await loadFavorites(favIds);
+  startMyProductsListener(user.uid);
+});
+
+buildPageHeader({});
+buildBottomNav('profile');
+applyTranslations();
+</script>
+</body>
+</html>

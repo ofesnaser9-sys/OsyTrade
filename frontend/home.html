@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>OsyTrade — Home</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.main{position:relative;z-index:1;padding-top:78px;padding-bottom:calc(var(--bottom-nav-h,76px)+20px)}
+
+/* HERO */
+.hero{width:100%;padding:60px 24px 72px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#020617 0%,#0a1628 50%,#071a30 100%)}
+[data-theme=light] .hero{background:linear-gradient(135deg,#e0f2fe 0%,#f0f6ff 60%,#ecfdf5 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 80% 50%,rgba(34,211,238,.12) 0%,transparent 60%);pointer-events:none;z-index:0}
+.hero-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative;z-index:1}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:32px;text-align:center}}
+.hero-title{font-size:clamp(34px,6vw,72px);font-weight:800;line-height:1.05;letter-spacing:-.04em;
+  background:linear-gradient(135deg,var(--text-primary) 0%,var(--accent) 55%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:pre-line}
+.hero-sub{font-size:clamp(14px,1.8vw,17px);color:var(--text-secondary);margin-top:14px;line-height:1.75;max-width:460px}
+@media(max-width:860px){.hero-sub{margin:10px auto 0}}
+.hero-cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+@media(max-width:860px){.hero-cta{justify-content:center}}
+.feat-card{border-radius:26px;overflow:hidden;position:relative;
+  background:linear-gradient(135deg,#0a1f3a 0%,#061628 60%,#0a2a1e 100%);
+  border:1px solid var(--glass-border);box-shadow:0 24px 60px rgba(0,0,0,.4),var(--shadow-glow,0 0 40px rgba(34,211,238,.10));
+  cursor:pointer;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+[data-theme=light] .feat-card{background:linear-gradient(135deg,#e0f2fe 0%,#ecfdf5 100%)}
+.feat-card:hover{transform:translateY(-5px) scale(1.01)}
+.feat-badge{position:absolute;top:16px;z-index:2;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#020617;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:999px}
+[dir=ltr] .feat-badge{left:16px}[dir=rtl] .feat-badge{right:16px}
+.feat-img{width:100%;height:210px;object-fit:cover;filter:brightness(.85);transform:scale(1.04);transition:transform .6s}
+.feat-card:hover .feat-img{transform:scale(1.11)}
+.feat-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(2,6,23,.88) 100%)}
+[data-theme=light] .feat-overlay{background:linear-gradient(to bottom,transparent 20%,rgba(240,246,255,.88) 100%)}
+.feat-body{padding:16px 20px 20px}
+.feat-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.feat-name{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.feat-desc{font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6}
+.feat-footer{display:flex;align-items:center;justify-content:space-between}
+.feat-price{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.03em}
+
+.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);border-radius:20px;overflow:hidden;border:1px solid var(--glass-border)}
+.stat-cell{padding:18px 12px;text-align:center;background:var(--card-bg);backdrop-filter:blur(20px);border-right:1px solid var(--glass-border)}
+.stat-cell:last-child{border-right:none}
+[dir=rtl] .stat-cell{border-right:none;border-left:1px solid var(--glass-border)}
+[dir=rtl] .stat-cell:last-child{border-left:none}
+.stat-num{font-size:clamp(22px,4vw,28px);font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--text-secondary);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+
+.section{max-width:1280px;margin:0 auto;padding:0 24px}
+@media(max-width:640px){.section{padding:0 16px}}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+
+.cat-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.cat-scroll::-webkit-scrollbar{display:none}
+[dir=rtl] .cat-scroll{flex-direction:row-reverse}
+.cat-pill{flex-shrink:0;padding:9px 20px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:600;
+  border:1px solid var(--glass-border);background:var(--glass);color:var(--text-secondary);
+  white-space:nowrap;font-family:inherit;transition:all .22s cubic-bezier(.34,1.56,.64,1)}
+.cat-pill:active{transform:scale(.91)}
+.cat-pill.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#020617;font-weight:700;box-shadow:0 6px 20px rgba(34,211,238,.28)}
+.cat-pill:not(.active):hover{border-color:var(--accent);color:var(--text-primary)}
+
+.prod-grid{display:grid;gap:18px;grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.prod-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.prod-grid{grid-template-columns:repeat(2,1fr);gap:13px}}
+@media(max-width:380px){.prod-grid{grid-template-columns:1fr 1fr;gap:10px}}
+
+.eco-banner{border-radius:22px;padding:22px 26px;background:linear-gradient(135deg,rgba(34,211,238,.12) 0%,rgba(110,231,183,.10) 100%);border:1px solid rgba(34,211,238,.20);display:flex;align-items:center;gap:18px;cursor:pointer;transition:all .28s cubic-bezier(.34,1.56,.64,1)}
+.eco-banner:hover{transform:scale(1.01);box-shadow:0 8px 30px rgba(34,211,238,.15)}
+.eco-banner:active{transform:scale(.97)}
+@media(max-width:600px){.eco-banner{flex-direction:column;text-align:center}}
+
+/* ═══ CHAT AI WIDGET ═══ */
+#ai-fab{
+  position:fixed;bottom:90px;right:28px;
+  width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,#22d3ee,#6ee7b7);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 28px rgba(34,211,238,.45),0 0 0 0 rgba(34,211,238,.35);
+  transition:transform .2s,box-shadow .2s;
+  z-index:9999;
+  animation:fab-pulse 2.8s ease-in-out infinite;
+}
+@keyframes fab-pulse{
+  0%,100%{box-shadow:0 6px 28px rgba(34,211,238,.45),0 0 0 0 rgba(34,211,238,.35)}
+  60%{box-shadow:0 6px 28px rgba(34,211,238,.45),0 0 0 14px rgba(34,211,238,0)}
+}
+#ai-fab:hover{transform:scale(1.1) rotate(8deg);box-shadow:0 10px 36px rgba(34,211,238,.60)}
+#ai-fab svg{width:26px;height:26px;fill:#020617}
+#ai-notif{
+  position:absolute;top:-2px;right:-2px;
+  width:18px;height:18px;border-radius:50%;
+  background:#ef4444;color:#fff;font-size:9px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #020617;
+  animation:badge-pop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes badge-pop{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* Chat box */
+#ai-box{
+  position:fixed;bottom:165px;right:28px;
+  width:360px;max-height:0;overflow:hidden;
+  background:rgba(2,6,23,.95);
+  border:1px solid rgba(34,211,238,.18);
+  border-radius:24px;
+  box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(34,211,238,.08);
+  display:flex;flex-direction:column;
+  z-index:9998;
+  transition:max-height .4s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;
+  opacity:0;pointer-events:none;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+}
+#ai-box.open{max-height:520px;opacity:1;pointer-events:all}
+@media(max-width:420px){#ai-box{width:calc(100vw - 32px);right:16px}}
+
+/* Header */
+#ai-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 13px;
+  background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(110,231,183,.06));
+  border-bottom:1px solid rgba(34,211,238,.12);
+  flex-shrink:0;
+  border-radius:24px 24px 0 0;
+  position:relative;overflow:hidden;
+}
+#ai-header::before{
+  content:'';position:absolute;inset:0 0 auto;height:1.5px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);
+}
+.ai-hdr-left{display:flex;align-items:center;gap:10px}
+.ai-logo-wrap{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(34,211,238,.35);
+  flex-shrink:0;
+}
+.ai-logo-wrap svg{width:20px;height:20px;fill:#020617}
+.ai-name{font-size:14px;font-weight:800;letter-spacing:-.01em;color:var(--text-primary,#f0f6ff)}
+.ai-status{font-size:11px;color:#22c55e;display:flex;align-items:center;gap:4px;margin-top:1px;font-weight:600}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:ai-blink 2s ease-in-out infinite;box-shadow:0 0 5px #22c55e}
+@keyframes ai-blink{0%,100%{opacity:1}50%{opacity:.4}}
+.ai-close{width:30px;height:30px;border:none;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;transition:background .18s,transform .18s}
+.ai-close:hover{background:rgba(255,255,255,.12);transform:rotate(90deg)}
+.ai-close svg{width:16px;height:16px;fill:rgba(255,255,255,.55)}
+
+/* Messages */
+#ai-msgs{
+  flex:1;overflow-y:auto;padding:14px 14px 10px;
+  display:flex;flex-direction:column;gap:10px;
+}
+#ai-msgs::-webkit-scrollbar{width:3px}
+#ai-msgs::-webkit-scrollbar-thumb{background:rgba(34,211,238,.2);border-radius:999px}
+
+.ai-msg{display:flex;gap:8px;max-width:92%}
+.ai-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.ai-msg.bot{align-self:flex-start}
+
+.ai-av{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;flex-shrink:0;margin-top:3px;
+}
+.ai-av.bot{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#020617}
+.ai-av.usr{background:rgba(34,211,238,.15);border:1px solid rgba(34,211,238,.3);color:#22d3ee}
+
+.ai-bub{
+  padding:10px 14px;border-radius:18px;
+  font-size:13px;line-height:1.65;
+  white-space:pre-wrap;word-break:break-word;
+  max-width:100%;
+}
+.ai-msg.bot .ai-bub{
+  background:rgba(15,31,56,.8);
+  border:1px solid rgba(34,211,238,.12);
+  color:#e2e8f0;
+  border-bottom-left-radius:4px;
+}
+.ai-msg.user .ai-bub{
+  background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(110,231,183,.12));
+  border:1px solid rgba(34,211,238,.22);
+  color:#f0f6ff;
+  border-bottom-right-radius:4px;
+}
+
+/* Typing dots */
+.t-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 2px;animation:tdot 1.1s ease-in-out infinite}
+.t-dot:nth-child(2){animation-delay:.18s}.t-dot:nth-child(3){animation-delay:.36s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.6}30%{transform:translateY(-6px);opacity:1}}
+
+/* Input area */
+#ai-input-area{
+  padding:10px 12px 12px;
+  background:rgba(10,22,40,.7);
+  border-top:1px solid rgba(34,211,238,.10);
+  display:flex;align-items:flex-end;gap:8px;
+  flex-shrink:0;
+  border-radius:0 0 24px 24px;
+}
+#ai-inp{
+  flex:1;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(34,211,238,.18);
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:13px;color:#e2e8f0;
+  font-family:inherit;outline:none;
+  resize:none;min-height:38px;max-height:90px;
+  transition:border-color .22s,background .22s;
+  caret-color:#22d3ee;
+  line-height:1.5;
+}
+#ai-inp::placeholder{color:rgba(255,255,255,.28)}
+#ai-inp:focus{border-color:rgba(34,211,238,.45);background:rgba(255,255,255,.07)}
+#ai-send{
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent,#22d3ee),var(--accent2,#6ee7b7));
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:transform .18s,box-shadow .18s;
+  box-shadow:0 4px 14px rgba(34,211,238,.30);
+}
+#ai-send:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(34,211,238,.48)}
+#ai-send:active{transform:scale(.88)}
+#ai-send:disabled{background:rgba(255,255,255,.06);box-shadow:none;cursor:not-allowed}
+#ai-send svg{width:15px;height:15px;fill:#020617}
+#ai-send:disabled svg{fill:rgba(255,255,255,.2)}
+
+/* Footer */
+#ai-foot{
+  padding:5px 14px 9px;text-align:center;
+  font-size:10px;color:rgba(255,255,255,.22);
+  letter-spacing:.5px;background:rgba(10,22,40,.7);
+  border-radius:0 0 24px 24px;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="main">
+
+  <!-- HERO -->
+  <section class="hero fade-up">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-title" data-t="hero_title" style="white-space:pre-line">Trade Tools.
+Trade Green.</div>
+        <p class="hero-sub" data-t="hero_sub">Premium eco-certified marketplace for tools &amp; equipment.</p>
+        <div class="hero-cta">
+          <button class="btn-grad" onclick="window.location.href='market.html'" data-t="go_market">Browse Market →</button>
+          <!-- Login btn: shown only when NOT logged in, hidden after login -->
+          <a href="login.html" class="btn-outline" id="heroLoginBtn" data-t="login">Login</a>
+        </div>
+      </div>
+      <div>
+        <div class="feat-card" id="heroFeat">
+          <span class="feat-badge" data-t="featured">⭐ Featured</span>
+          <img class="feat-img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80" alt="Featured Tool"/>
+          <div class="feat-overlay"></div>
+          <div class="feat-body">
+            <div class="feat-tag" data-t="eco_certified">ECO CERTIFIED · TOOLS</div>
+            <div class="feat-name">Pro Cordless Drill Set</div>
+            <div class="feat-desc">High-performance, zero-emission cordless drill. 3-year eco-warranty, refurbished &amp; certified.</div>
+            <div class="feat-footer">
+              <div class="feat-price">$148 <span style="font-size:12px;font-weight:400;color:var(--text-secondary)" data-t="unit">/ unit</span></div>
+              <button class="btn-grad" style="padding:9px 18px;font-size:12px" data-t="view_deal" onclick="window.location.href='market.html'">View Deal</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div style="padding:26px 24px 0;max-width:1280px;margin:0 auto" class="fade-up">
+    <div class="stats-strip">
+      <div class="stat-cell"><div class="stat-num">2.4K</div><div class="stat-lbl" data-t="listings">Listings</div></div>
+      <div class="stat-cell"><div class="stat-num">98%</div><div class="stat-lbl" data-t="eco_score">Eco Score</div></div>
+      <div class="stat-cell"><div class="stat-num">320</div><div class="stat-lbl" data-t="sellers">Sellers</div></div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div style="height:40px"></div>
+  <div class="section fade-up">
+    <div class="sec-header"><div class="section-title" data-t="browse">Browse Categories</div></div>
+    <div class="cat-scroll" id="catScroll">
+      <button class="cat-pill active" data-cat="all" data-t="all">All</button>
+      <button class="cat-pill" data-cat="tools" data-t="tools">🔧 Tools</button>
+      <button class="cat-pill" data-cat="machines" data-t="machines">⚙️ Machines</button>
+      <button class="cat-pill" data-cat="eco" data-t="eco">🌿 Eco</button>
+      <button class="cat-pill" data-cat="electrical" data-t="electrical">⚡ Electrical</button>
+      <button class="cat-pill" data-cat="garden" data-t="garden">🌱 Garden</button>
+    </div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div style="height:22px"></div>
+  <div class="section fade-up">
+    <div class="sec-header">
+      <div class="section-title" data-t="popular">Popular Listings</div>
+      <a href="market.html" class="btn-outline" style="padding:7px 16px;font-size:12px" data-t="go_market">Browse Market →</a>
+    </div>
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+
+  <!-- ECO BANNER -->
+  <div style="height:44px"></div>
+  <div class="section fade-up">
+    <div class="eco-banner" onclick="window.location.href='market.html'">
+      <span style="font-size:40px;flex-shrink:0">🌍</span>
+      <div>
+        <div style="font-size:17px;font-weight:800;color:var(--accent2);margin-bottom:4px" data-t="trade_green">Trade Green, Trade Smart</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6" data-t="trade_green_sub">Every listing is verified for environmental standards.</div>
+      </div>
+      <button class="btn-grad" style="margin-inline-start:auto;flex-shrink:0;white-space:nowrap" data-t="go_market">Browse Market →</button>
+    </div>
+  </div>
+  <div style="height:40px"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     AI CHAT WIDGET
+══════════════════════════════════════ -->
+
+<!-- FAB button -->
+<button id="ai-fab" onclick="aiToggle()" aria-label="AI Assistant">
+  <div id="ai-notif">1</div>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l4.93-1.37A9.953 9.953 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+  </svg>
+</button>
+
+<!-- Chat Box -->
+<div id="ai-box">
+
+  <!-- Header -->
+  <div id="ai-header">
+    <div class="ai-hdr-left">
+      <div class="ai-logo-wrap">
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7H3a7 7 0 017-7h1V5.73C10.4 5.39 10 4.74 10 4a2 2 0 012-2zM7.5 18a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm9 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>
+      </div>
+      <div>
+        <div class="ai-name">OsyTrade AI</div>
+        <div class="ai-status"><span class="ai-dot"></span>Active now</div>
+      </div>
+    </div>
+    <button class="ai-close" onclick="aiToggle()" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div id="ai-msgs"></div>
+
+  <!-- Input -->
+  <div id="ai-input-area">
+    <textarea id="ai-inp" placeholder="Ask me anything…" rows="1"
+      onkeydown="aiKey(event)" oninput="aiResize(this)"></textarea>
+    <button id="ai-send" onclick="aiSend()" aria-label="Send">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </div>
+
+  <div id="ai-foot">OsyTrade · Powered by AI</div>
+</div>
+
+<div>fgbsojbwo</div>
+<div>fgbsojbwo</div>
+<div>fgbsojbwo</div>
+<div>fgbsojbwo</div>
+<div>fgbsojbwo</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  AUTH STATE → show/hide Login btn correctly
+//  Login button shows ONLY when NOT logged in
+//  Logout in header dropdown shows ONLY when logged in
+// ═══════════════════════════════════════════
+auth.onAuthStateChanged(user => {
+  const loginBtn = document.getElementById('heroLoginBtn');
+
+  if (user) {
+    // ✅ User is logged in → HIDE the hero Login button
+    if (loginBtn) loginBtn.style.display = 'none';
+    setupPresence(user.uid);
+
+    // Load Firestore products
+    db.collection('products').orderBy('createdAt','desc').limit(12).get()
+      .then(snap => {
+        if (!snap.empty) {
+          const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderProducts(currentCat, [...items, ...STATIC]);
+        }
+      }).catch(() => {});
+
+  } else {
+    // ✅ User is NOT logged in → SHOW the hero Login button
+    if (loginBtn) loginBtn.style.display = '';
+  }
+});
+
+// ═══════════════════════════════════════════
+//  AI CHAT WIDGET LOGIC
+// ═══════════════════════════════════════════
+const AI_WORKER = "https://fragrant-wave-cd17.ofesnaser9.workers.dev";
+const AI_MODEL  = "llama-3.3-70b-versatile";
+const AI_SYSTEM = `You are a smart assistant for OsyTrade website.
+Rules:
+- Speak in the same language as the user (Arabic or English)
+- Be clear, friendly, and concise
+- Do not mix languages in one sentence
+About OsyTrade:
+- OsyTrade is an eco-friendly tools marketplace
+- Users can buy, sell, and chat with each other
+Pages: Home, Market, Chat, Profile, Cart, Contact
+- If user asks about contacting support → tell them to go to Contact page
+- If user asks about products → tell them to go to Market`;
+
+let aiHistory = [], aiLoading = false, aiOpen = false;
+
+function aiToggle() {
+  aiOpen = !aiOpen;
+  document.getElementById('ai-box').classList.toggle('open', aiOpen);
+  document.getElementById('ai-notif').style.display = 'none';
+  if (aiOpen && document.getElementById('ai-msgs').children.length === 0) {
+    setTimeout(() => {
+      aiBubble('bot', 'مرحباً! 👋 أنا مساعدك الذكي لـ OsyTrade.\nكيف يمكنني مساعدتك اليوم؟');
+    }, 120);
+  }
+  if (aiOpen) setTimeout(() => document.getElementById('ai-inp').focus(), 200);
+}
+
+function aiBubble(role, text) {
+  const msgs = document.getElementById('ai-msgs');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-msg ' + role;
+  const av = document.createElement('div');
+  av.className = 'ai-av ' + role;
+  av.textContent = role === 'user' ? '👤' : '🤖';
+  const bub = document.createElement('div');
+  bub.className = 'ai-bub';
+  bub.textContent = text;
+  wrap.appendChild(av);
+  wrap.appendChild(bub);
+  wrap.style.opacity = '0';
+  wrap.style.transform = 'translateY(8px)';
+  msgs.appendChild(wrap);
+  requestAnimationFrame(() => {
+    wrap.style.transition = 'opacity .25s ease, transform .25s ease';
+    wrap.style.opacity = '1';
+    wrap.style.transform = 'translateY(0)';
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function aiTyping(show) {
+  const msgs = document.getElementById('ai-msgs');
+  const existing = document.getElementById('ai-typing');
+  if (show && !existing) {
+    const wrap = document.createElement('div');
+    wrap.className = 'ai-msg bot'; wrap.id = 'ai-typing';
+    const av = document.createElement('div');
+    av.className = 'ai-av bot'; av.textContent = '🤖';
+    const bub = document.createElement('div');
+    bub.className = 'ai-bub';
+    bub.innerHTML = '<span class="t-dot"></span><span class="t-dot"></span><span class="t-dot"></span>';
+    wrap.appendChild(av); wrap.appendChild(bub);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (!show && existing) {
+    existing.remove();
+  }
+}
+
+function aiKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSend(); }
+}
+
+function aiResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+async function aiSend() {
+  if (aiLoading) return;
+  const inp  = document.getElementById('ai-inp');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  inp.value = ''; inp.style.height = '38px';
+  aiLoading = true;
+  document.getElementById('ai-send').disabled = true;
+
+  aiBubble('user', text);
+  aiHistory.push({ role: 'user', content: text });
+  aiTyping(true);
+
+  try {
+    const res = await fetch(AI_WORKER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: 700,
+        messages: [{ role: 'system', content: AI_SYSTEM }, ...aiHistory]
+      })
+    });
+    const data = await res.json();
+    aiTyping(false);
+
+    const reply = data.error
+      ? '⚠️ ' + data.error.message
+      : data.choices?.[0]?.message?.content || 'لم أتمكن من الرد، حاول مرة أخرى.';
+
+    aiHistory.push({ role: 'assistant', content: reply });
+    aiBubble('bot', reply);
+
+  } catch {
+    aiTyping(false);
+    aiBubble('bot', '⚠️ مشكلة في الاتصال، حاول مرة أخرى.');
+  }
+
+  aiLoading = false;
+  document.getElementById('ai-send').disabled = false;
+  inp.focus();
+}
+
+// ═══════════════════════════════════════════
+//  PRODUCTS
+// ═══════════════════════════════════════════
+const STATIC = [
+  {id:'s1',name:'Eco Hammer Set',nameAr:'طقم مطرقة بيئي',sub:'Hand Tools',subAr:'أدوات يدوية',price:'$34',eco:true,cat:'tools',img:'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&q=80'},
+  {id:'s2',name:'Solar Chainsaw',nameAr:'منشار شمسي',sub:'Machines',subAr:'آلات',price:'$299',eco:true,cat:'machines',img:'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&q=80'},
+  {id:'s3',name:'Angle Grinder Pro',nameAr:'جلاخة احترافية',sub:'Power Tools',subAr:'أدوات كهربائية',price:'$89',eco:false,cat:'electrical',img:'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&q=80'},
+  {id:'s4',name:'Compost Turner',nameAr:'محول سماد',sub:'Garden',subAr:'حديقة',price:'$56',eco:true,cat:'garden',img:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80'},
+  {id:'s5',name:'Laser Level Kit',nameAr:'ميزان ليزر',sub:'Measuring',subAr:'قياس',price:'$120',eco:false,cat:'tools',img:'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=80'},
+  {id:'s6',name:'Eco Leaf Blower',nameAr:'منفاخ بيئي',sub:'Garden',subAr:'حديقة',price:'$74',eco:true,cat:'eco',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80'},
+  {id:'s7',name:'Cordless Jigsaw',nameAr:'منشار نجاري',sub:'Power Tools',subAr:'أدوات كهربائية',price:'$145',eco:false,cat:'electrical',img:'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&q=80'},
+  {id:'s8',name:'Solar Water Pump',nameAr:'مضخة مياه شمسية',sub:'Machines',subAr:'آلات',price:'$220',eco:true,cat:'machines',img:'https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?w=400&q=80'},
+];
+
+let currentCat = 'all';
+let likedItems  = new Set();
+
+function makeCard(p) {
+  const lang    = getLang();
+  const name    = lang === 'ar' ? (p.nameAr || p.name) : p.name;
+  const sub     = lang === 'ar' ? (p.subAr  || p.sub)  : p.sub;
+  const isLiked = likedItems.has(p.id);
+  const el      = document.createElement('div');
+  el.className  = 'product-card';
+  el.innerHTML  = `
+    <div class="pc-img-wrap">
+      <img class="pc-img" src="${p.img || p.imageUrl || ''}" alt="${escHtml(name)}" loading="lazy"/>
+      <button class="pc-fav" data-id="${p.id}">${isLiked ? '❤️' : '🤍'}</button>
+    </div>
+    <div class="pc-body">
+      <div class="pc-name">${escHtml(name)}</div>
+      <div class="pc-sub">${escHtml(sub || p.category || '')}</div>
+      <div class="pc-footer">
+        <div class="pc-price">${p.price ? ('$' + String(p.price).replace('$', '')) : '—'}</div>
+        ${p.eco ? `<div class="pc-eco" data-t="eco_label">🌿 Eco</div>` : ''}
+      </div>
+    </div>`;
+  el.querySelector('.pc-fav').addEventListener('click', e => {
+    e.stopPropagation();
+    const btn = e.currentTarget, id = p.id;
+    if (likedItems.has(id)) { likedItems.delete(id); btn.textContent = '🤍'; }
+    else { likedItems.add(id); btn.textContent = '❤️'; btn.style.transform = 'scale(1.5)'; setTimeout(() => btn.style.transform = '', 250); }
+  });
+  el.addEventListener('click', () => window.location.href = `market.html?product=${p.id}`);
+  addRipple(el);
+  return el;
+}
+
+function renderProducts(cat = 'all', items = STATIC) {
+  const grid     = document.getElementById('prodGrid');
+  const filtered = cat === 'all' ? items : items.filter(p => p.cat === cat || p.category === cat);
+  grid.innerHTML = '';
+  (filtered.length ? filtered : items.slice(0, 4)).forEach((p, i) => {
+    const card = makeCard(p);
+    card.style.opacity   = '0';
+    card.style.transform = 'translateY(16px)';
+    grid.appendChild(card);
+    setTimeout(() => {
+      card.style.transition = 'opacity .35s ease,transform .35s cubic-bezier(.34,1.56,.64,1)';
+      card.style.opacity    = '1';
+      card.style.transform  = 'translateY(0)';
+    }, i * 55);
+  });
+}
+
+document.getElementById('catScroll').addEventListener('click', e => {
+  const pill = e.target.closest('.cat-pill'); if (!pill) return;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  currentCat = pill.dataset.cat;
+  renderProducts(currentCat);
+});
+
+addRipple(document.getElementById('heroFeat'));
+renderProducts('all');
+buildPageHeader({ siteName: 'OSYTRADE' });
+buildBottomNav('home');
+observeFadeUps();
+applyTranslations();
+
+// ✅ Override site name everywhere after header is built
+document.querySelectorAll('.logo-text').forEach(el => el.textContent = 'OSYTRADE');
+document.title = 'OsyTrade — Home';
+</script>
+</body>
+</html> 

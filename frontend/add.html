@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTrade — Add Listing</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.main{position:relative;z-index:1;padding-top:84px;padding-bottom:calc(var(--bottom-nav-h,76px)+24px)}
+.form-card{max-width:640px;margin:0 auto;background:var(--card-bg);border:1px solid var(--glass-border);border-radius:28px;padding:32px 28px;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 24px 64px rgba(0,0,0,.28);animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:680px){.form-card{border-radius:20px;padding:24px 18px}}
+
+.field{margin-bottom:18px}
+
+/* IMAGE UPLOAD */
+.img-upload-zone{width:100%;aspect-ratio:16/7;border:2px dashed var(--glass-border);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);background:var(--glass);position:relative;overflow:hidden}
+.img-upload-zone:hover{border-color:var(--accent);background:rgba(34,211,238,.05)}
+.img-upload-zone.has-img{border-style:solid;border-color:rgba(34,211,238,.3)}
+.img-upload-zone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px}
+.img-upload-icon{font-size:40px;z-index:1}
+.img-upload-label{font-size:13px;font-weight:600;color:var(--text-secondary);z-index:1}
+.img-upload-zone.has-img .img-upload-icon,.img-upload-zone.has-img .img-upload-label{display:none}
+.img-change-btn{position:absolute;top:10px;right:10px;z-index:2;background:rgba(2,6,23,.7);border:none;border-radius:999px;color:white;font-size:12px;font-weight:700;padding:5px 12px;cursor:pointer;backdrop-filter:blur(8px);display:none}
+.img-upload-zone.has-img .img-change-btn{display:block}
+[dir=rtl] .img-change-btn{right:auto;left:10px}
+
+select.form-input{cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(200,220,255,.6)' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:12px;padding-inline-end:36px}
+[dir=ltr] select.form-input{background-position:right 14px center}
+[dir=rtl] select.form-input{background-position:left 14px center}
+
+textarea.form-input{resize:vertical;min-height:100px}
+
+.price-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+.eco-toggle{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;cursor:pointer;transition:all .22s}
+.eco-toggle:hover{border-color:rgba(110,231,183,.3)}
+.eco-toggle.on{background:rgba(110,231,183,.10);border-color:rgba(110,231,183,.25)}
+.eco-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--glass-border);background:var(--glass);display:flex;align-items:center;justify-content:center;transition:all .22s;flex-shrink:0}
+.eco-toggle.on .eco-check{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+
+.progress-bar-wrap{width:100%;height:6px;background:var(--glass-border);border-radius:999px;overflow:hidden;margin-top:10px;display:none}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;width:0%;transition:width .3s ease}
+
+.success-card{text-align:center;padding:40px 20px;display:none}
+.success-icon{font-size:64px;margin-bottom:16px;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="main">
+  <div style="padding:0 20px">
+    <div class="form-card" id="formCard">
+      <!-- HEADER -->
+      <div style="margin-bottom:28px">
+        <div class="page-title" data-t="add_product">Add Product</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:5px">List your eco-certified tool or equipment</div>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-card" id="successCard">
+        <div class="success-icon">🎉</div>
+        <div style="font-size:22px;font-weight:800;margin-bottom:8px" data-t="success">Product listed!</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:28px">Your listing is now live on the marketplace.</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn-grad" onclick="window.location.href='market.html'">View Market</button>
+          <button class="btn-outline" onclick="resetForm()">Add Another</button>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div id="theForm">
+        <!-- IMAGE UPLOAD -->
+        <div class="field">
+          <label class="form-label" data-t="product_image">Product Image</label>
+          <div class="img-upload-zone" id="imgZone">
+            <div class="img-upload-icon">📷</div>
+            <div class="img-upload-label" data-t="upload_image">Upload image</div>
+            <img id="imgPreview" src="" alt="" style="display:none"/>
+            <button class="img-change-btn" id="changeImgBtn" type="button">Change</button>
+          </div>
+          <input type="file" id="imgFile" accept="image/*" style="display:none"/>
+        </div>
+
+        <!-- NAME -->
+        <div class="field">
+          <label class="form-label" data-t="product_name">Product name</label>
+          <input class="form-input" id="prodName" data-tp="product_name" placeholder="Product name" maxlength="60"/>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="field">
+          <label class="form-label" data-t="product_desc">Description</label>
+          <textarea class="form-input" id="prodDesc" data-tp="product_desc" placeholder="Description" rows="3"></textarea>
+        </div>
+
+        <!-- PRICE + CATEGORY -->
+        <div class="price-row">
+          <div class="field" style="margin-bottom:0">
+            <label class="form-label" data-t="product_price">Price ($)</label>
+            <input class="form-input" id="prodPrice" type="number" min="0" step="0.01" data-tp="product_price" placeholder="49.99"/>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="form-label" data-t="product_category">Category</label>
+            <select class="form-input" id="prodCat">
+              <option value="tools" data-t="tools" style="color:black;">🔧 Tools</option>
+              <option value="machines" data-t="machines" style="color:black;">⚙️ Machines</option>
+              <option value="eco" data-t="eco" style="color:black;">🌿 Eco</option>
+              <option value="electrical" data-t="electrical" style="color:black;">⚡ Electrical</option>
+              <option value="garden" data-t="garden" style="color:black;">🌱 Garden</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ECO TOGGLE -->
+        <div class="field" style="margin-top:18px">
+          <div class="eco-toggle" id="ecoToggle">
+            <div class="eco-check" id="ecoCheck">✓</div>
+            <div>
+              <div style="font-size:14px;font-weight:700">🌿 Eco Certified</div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Mark this as an environmentally certified product</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UPLOAD PROGRESS -->
+        <div class="progress-bar-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- ERROR -->
+        <div id="formErr" style="display:none;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.28);border-radius:12px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:14px"></div>
+
+        <!-- SUBMIT -->
+        <button class="btn-grad" style="width:100%;padding:14px;margin-top:20px;font-size:15px" id="submitBtn" data-t="submit">Submit Listing</button>
+        <button class="btn-outline" style="width:100%;margin-top:10px;justify-content:center" onclick="window.location.href='market.html'">Cancel</button>
+      </div><!-- /theForm -->
+    </div>
+  </div>
+</div>
+
+
+<div>vxjkhjsr</div>
+<div>vxjkhjsr</div>
+<div>vxjkhjsr</div>
+<div>vxjkhjsr</div>
+<div>vxjkhjsr</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script src="api.js"></script>
+<script>
+let selectedFile = null;
+let ecoOn = false;
+let currentUser = null;
+
+// ─── Helper: compress image with Canvas before uploading ──────────
+// Reduces large photos to max 1200px wide and JPEG quality 0.82,
+// dramatically shrinking upload size and Firestore read latency.
+function compressImage(file, maxPx = 1200, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        // Calculate scaled dimensions
+        let { width, height } = img;
+        if (width > maxPx || height > maxPx) {
+          if (width >= height) { height = Math.round(height * maxPx / width); width = maxPx; }
+          else                 { width  = Math.round(width  * maxPx / height); height = maxPx; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          if (!blob) { reject(new Error('Canvas toBlob failed')); return; }
+          // Give the compressed blob the same name as original
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─── Show preview from a File object ─────────────────────────────
+function showPreview(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const preview = document.getElementById('imgPreview');
+    preview.src = ev.target.result; preview.style.display = 'block';
+    document.getElementById('imgZone').classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+}
+
+// Image upload zone — click
+document.getElementById('imgZone').addEventListener('click', () => document.getElementById('imgFile').click());
+document.getElementById('changeImgBtn').addEventListener('click', e => { e.stopPropagation(); document.getElementById('imgFile').click(); });
+
+// File chosen via <input>
+document.getElementById('imgFile').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  selectedFile = file;
+  showPreview(file);
+});
+
+// Drag & drop support
+const zone = document.getElementById('imgZone');
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+zone.addEventListener('dragleave', ()  => zone.style.borderColor = '');
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  selectedFile = file;
+  showPreview(file);
+});
+
+// Eco toggle
+document.getElementById('ecoToggle').addEventListener('click', () => {
+  ecoOn = !ecoOn;
+  document.getElementById('ecoToggle').classList.toggle('on', ecoOn);
+  document.getElementById('ecoCheck').style.color = ecoOn ? '#020617' : 'transparent';
+});
+document.getElementById('ecoCheck').style.color = 'transparent';
+
+// ─── SUBMIT ───────────────────────────────────────────────────────
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  if (!currentUser) { window.location.href = 'login.html'; return; }
+
+  const name  = document.getElementById('prodName').value.trim();
+  const desc  = document.getElementById('prodDesc').value.trim();
+  const price = parseFloat(document.getElementById('prodPrice').value);
+  const cat   = document.getElementById('prodCat').value;
+  const errEl = document.getElementById('formErr');
+  errEl.style.display = 'none';
+
+  // ── Validation ───────────────────────────────────────────────
+  if (!name)               { errEl.textContent = 'اسم المنتج مطلوب / Product name is required.'; errEl.style.display = 'block'; return; }
+  if (!price || price <= 0){ errEl.textContent = 'أدخل سعراً صحيحاً / Enter a valid price.';      errEl.style.display = 'block'; return; }
+
+  const btn      = document.getElementById('submitBtn');
+  const progWrap = document.getElementById('progressWrap');
+  const progBar  = document.getElementById('progressBar');
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ جاري الرفع…';
+  progWrap.style.display = 'block';
+  progBar.style.width    = '5%';
+
+  // ── ownerName: read from cache (no extra Firestore round-trip) ─
+  // Use auth displayName first, fall back to email prefix.
+  // This removes the blocking serial await that was causing the hang.
+  const ownerName = currentUser.displayName
+                 || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+
+  // ── Step 1: compress + upload image (if any) ─────────────────
+  let imageUrl = '';
+  if (selectedFile) {
+    try {
+      progBar.style.width = '15%';
+      const compressed    = await compressImage(selectedFile);
+      progBar.style.width = '30%';
+
+      const storagePath = `products/${currentUser.uid}/${Date.now()}_${compressed.name}`;
+      const ref  = storage.ref(storagePath);
+      const task = ref.put(compressed);
+
+      await new Promise((resolve, reject) => {
+        task.on('state_changed',
+          snap => {
+            const pct = 30 + Math.round((snap.bytesTransferred / snap.totalBytes) * 60);
+            progBar.style.width = pct + '%';
+          },
+          reject,
+          resolve
+        );
+      });
+
+      progBar.style.width = '92%';
+      imageUrl = await ref.getDownloadURL();
+    } catch (e) {
+      errEl.textContent   = '⚠️ فشل رفع الصورة: ' + e.message;
+      errEl.style.display = 'block';
+      btn.disabled        = false;
+      btn.textContent     = tr('submit');
+      progWrap.style.display = 'none';
+      return;
+    }
+  } else {
+    // No image selected — skip straight to 90%
+    progBar.style.width = '90%';
+  }
+
+  // ── Step 2: save to Firestore ────────────────────────────────
+  try {
+    await addProduct({
+      // Content
+      name,
+      description:  desc || '',
+      price,
+      category:     cat,
+      eco:          ecoOn,
+      imageUrl,
+
+      // Owner fields (all aliases kept for full compatibility)
+      ownerId:      currentUser.uid,
+      ownerName,
+      userId:       currentUser.uid,
+      createdBy:    currentUser.uid,
+      sellerName:   ownerName,
+      sellerEmail:  currentUser.email || '',
+
+      // Metadata
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      likes:     0,
+    });
+
+    // ── Success: show 100%, toast, redirect immediately ─────────
+    progBar.style.width    = '100%';
+    progBar.style.background = '#22c55e';     // green flash
+
+    showToast('✅ تم نشر المنتج! جاري الانتقال للسوق…', 2000);
+
+    // Redirect to market after a very short delay so the user sees the toast
+    setTimeout(() => {
+      window.location.href = 'market.html?new=1';
+    }, 900);
+
+  } catch (e) {
+    errEl.textContent      = '⚠️ فشل الحفظ: ' + e.message;
+    errEl.style.display    = 'block';
+    btn.disabled           = false;
+    btn.textContent        = tr('submit');
+    progWrap.style.display = 'none';
+    progBar.style.width    = '0%';
+  }
+});
+
+// ─── RESET FORM (full clean state) ────────────────────────────────
+function resetForm() {
+  // Hide success, show form
+  document.getElementById('successCard').style.display = 'none';
+  document.getElementById('theForm').style.display = 'block';
+
+  // Clear all inputs
+  document.getElementById('prodName').value  = '';
+  document.getElementById('prodDesc').value  = '';
+  document.getElementById('prodPrice').value = '';
+  document.getElementById('prodCat').selectedIndex = 0;
+
+  // Clear image preview
+  const preview = document.getElementById('imgPreview');
+  preview.src = ''; preview.style.display = 'none';
+  document.getElementById('imgZone').classList.remove('has-img');
+  document.getElementById('imgFile').value = '';
+  selectedFile = null;
+
+  // Reset eco toggle
+  ecoOn = false;
+  document.getElementById('ecoToggle').classList.remove('on');
+  document.getElementById('ecoCheck').style.color = 'transparent';
+
+  // Reset progress bar & error
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('formErr').style.display = 'none';
+
+  // Re-enable submit button
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = tr('submit');
+}
+
+requireAuth(user => {
+  currentUser = user; setupPresence(user.uid);
+});
+
+buildPageHeader({});
+buildBottomNav('add');
+applyTranslations();
+</script>
+</body>
+</html>

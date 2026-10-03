@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTrade — Register</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.auth-page{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 20px 30px}
+.auth-card{width:100%;max-width:420px;background:var(--card-bg);border:1px solid var(--glass-border);border-radius:28px;padding:36px 30px;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 32px 80px rgba(0,0,0,.35);animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.auth-logo{text-align:center;font-size:26px;font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:5px}
+.auth-sub{text-align:center;font-size:14px;color:var(--text-secondary);margin-bottom:24px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:7px}
+.field-err{font-size:11px;color:#f87171;margin-top:4px;display:none}
+.pw-strength{height:4px;border-radius:999px;background:var(--glass-border);overflow:hidden;margin-top:7px}
+.pw-bar{height:100%;border-radius:999px;width:0;transition:width .3s,background .3s}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--glass-border)}
+.divider span{font-size:12px;color:var(--text-secondary);font-weight:600}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:14px;border:1px solid var(--glass-border);cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;background:var(--glass);color:var(--text-primary);transition:all .22s;margin-bottom:10px}
+.social-btn:hover{border-color:var(--accent);background:var(--glass-strong)}
+.social-btn:active{transform:scale(.95)}
+.social-icon{width:20px;height:20px;flex-shrink:0}
+.err{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.28);border-radius:12px;padding:11px 15px;font-size:13px;color:#fca5a5;margin-bottom:14px;display:none}
+.ok{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.28);border-radius:12px;padding:11px 15px;font-size:13px;color:#86efac;margin-bottom:14px;display:none;text-align:center}
+.auth-footer{text-align:center;margin-top:16px;font-size:13px;color:var(--text-secondary)}
+.auth-link{color:var(--accent);font-weight:700;text-decoration:none}
+.auth-link:hover{text-decoration:underline}
+.mini-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);transition:background .4s}
+.mh{max-width:1280px;margin:0 auto;padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between}
+[dir=rtl] .mh{flex-direction:row-reverse}
+.terms{font-size:11px;color:var(--text-secondary);text-align:center;margin-top:12px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="mini-header">
+  <div class="mh">
+    <a href="home.html" class="logo-text">OSYTRADE</a>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn" onclick="toggleLang()">🌐</button>
+      <button class="icon-btn" data-theme-icon onclick="toggleTheme()">☀️</button>
+    </div>
+  </div>
+</div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">OSYTRADE</div>
+    <div class="auth-sub" data-t="sign_up">Create Account</div>
+    <div class="err" id="errBanner"></div>
+    <div class="ok" id="okBanner"></div>
+
+    <div class="field">
+      <label data-t="username">Username</label>
+      <input class="form-input" type="text" id="nameInp" data-tp="username" placeholder="Username" maxlength="30" autocomplete="username"/>
+      <div class="field-err" id="nameErr"></div>
+    </div>
+    <div class="field">
+      <label data-t="email">Email address</label>
+      <input class="form-input" type="email" id="emailInp" data-tp="email" placeholder="Email address" autocomplete="email"/>
+      <div class="field-err" id="emailErr"></div>
+    </div>
+    <div class="field">
+      <label data-t="password">Password</label>
+      <input class="form-input" type="password" id="pwInp" data-tp="password" placeholder="Password" maxlength="64" autocomplete="new-password"/>
+      <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
+      <div class="field-err" id="pwErr"></div>
+    </div>
+    <div class="field" style="margin-bottom:22px">
+      <label data-t="confirm_password">Confirm password</label>
+      <input class="form-input" type="password" id="pw2Inp" data-tp="confirm_password" placeholder="Confirm password" maxlength="64" autocomplete="new-password"/>
+      <div class="field-err" id="pw2Err"></div>
+    </div>
+
+    <button class="btn-grad" style="width:100%;padding:14px;font-size:15px" id="regBtn" data-t="sign_up">Create Account</button>
+
+    <div class="divider"><span data-t="or">or</span></div>
+
+    <button class="social-btn" id="googleBtn">
+      <svg class="social-icon" viewBox="0 0 24 24"><path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0112 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115z"/><path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 01-6.723-4.823l-4.04 3.067A11.965 11.965 0 0012 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987z"/><path fill="#4A90E2" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21z"/><path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 014.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 000 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067z"/></svg>
+      <span data-t="sign_in_google">Continue with Google</span>
+    </button>
+
+    <p class="auth-footer">
+      <span data-t="have_account">Already have an account?</span>&nbsp;
+      <a href="login.html" class="auth-link" data-t="login">Login</a>
+    </p>
+    <p class="terms">By creating an account you agree to our Terms of Service.</p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script>
+redirectIfLoggedIn('home.html');
+
+const errEl=document.getElementById('errBanner');
+const okEl =document.getElementById('okBanner');
+function showErr(m){errEl.textContent=m;errEl.style.display='block';okEl.style.display='none';}
+function hideAll(){errEl.style.display='none';okEl.style.display='none';}
+function showFE(id,m){const e=document.getElementById(id);e.textContent=m;e.style.display='block';}
+function clearFEs(){['nameErr','emailErr','pwErr','pw2Err'].forEach(id=>{ const e=document.getElementById(id);e.textContent='';e.style.display='none'; });}
+
+document.getElementById('pwInp').addEventListener('input',e=>{
+  const pw=e.target.value;
+  let s=0; if(pw.length>=8)s++; if(/[A-Z]/.test(pw))s++; if(/[0-9]/.test(pw))s++; if(/[^A-Za-z0-9]/.test(pw))s++;
+  const bar=document.getElementById('pwBar');
+  bar.style.width=pw?(['20%','45%','70%','100%'][s-1]||'10%'):'0';
+  bar.style.background=pw?(['#ef4444','#f97316','#eab308','#22c55e'][s-1]||'#ef4444'):'';
+});
+
+function validate(){
+  clearFEs(); let ok=true;
+  const name=document.getElementById('nameInp').value.trim();
+  const email=document.getElementById('emailInp').value.trim();
+  const pw=document.getElementById('pwInp').value;
+  const pw2=document.getElementById('pw2Inp').value;
+  if(!name||name.length<3){showFE('nameErr','Min 3 characters.');ok=false;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showFE('emailErr','Valid email required.');ok=false;}
+  if(!pw||pw.length<6){showFE('pwErr','Min 6 characters.');ok=false;}
+  if(pw!==pw2){showFE('pw2Err','Passwords do not match.');ok=false;}
+  return ok;
+}
+
+async function handleOK(cred, username) {
+  await upsertUserDoc(cred.user,{username});
+  setupPresence(cred.user.uid);
+  okEl.textContent='Account created! Redirecting…'; okEl.style.display='block';
+  setTimeout(()=>window.location.href='home.html',1100);
+}
+
+document.getElementById('regBtn').addEventListener('click',async()=>{
+  hideAll(); if(!validate())return;
+  const username=document.getElementById('nameInp').value.trim();
+  const email=document.getElementById('emailInp').value.trim();
+  const pw=document.getElementById('pwInp').value;
+  const btn=document.getElementById('regBtn'); btn.disabled=true; btn.style.opacity='.6'; btn.textContent=tr('loading');
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,pw);
+    await cred.user.updateProfile({displayName:username});
+    await handleOK(cred,username);
+  }catch(e){showErr(e.message);btn.disabled=false;btn.style.opacity='1';btn.textContent=tr('sign_up');}
+});
+
+document.getElementById('googleBtn').addEventListener('click',async()=>{
+  hideAll();
+  try{
+    const cred=await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    await handleOK(cred, cred.user.displayName||cred.user.email.split('@')[0]);
+  }catch(e){if(e.code!=='auth/popup-closed-by-user')showErr(e.message);}
+});
+
+document.getElementById('pw2Inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('regBtn').click();});
+[document.getElementById('regBtn'),document.getElementById('googleBtn')].forEach(addRipple);
+</script>
+</body>
+</html>

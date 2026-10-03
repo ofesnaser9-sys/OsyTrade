@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoTrade — Chat</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* FULL SCREEN LAYOUT */
+html,body{height:100%;overflow:hidden}
+.app-shell{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1;max-width:100vw}
+
+/* ── SPLIT PANE (desktop) ── */
+.split{display:flex;flex:1;overflow:hidden}
+.pane-list{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-inline-end:1px solid var(--glass-border);background:var(--nav-bg);transition:background .4s}
+.pane-chat{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--navy);transition:background .4s}
+@media(max-width:768px){
+  .pane-list{width:100%;position:absolute;inset:0;z-index:10;transition:transform .38s cubic-bezier(.34,1.56,.64,1)}
+  .pane-chat{width:100%;position:absolute;inset:0;z-index:10;transform:translateX(100%);transition:transform .38s cubic-bezier(.34,1.56,.64,1)}
+  [dir=rtl] .pane-chat{transform:translateX(-100%)}
+  .pane-chat.open{transform:translateX(0)}
+  [dir=rtl] .pane-chat.open{transform:translateX(0)}
+  .pane-list.hidden{transform:translateX(-100%)}
+  [dir=rtl] .pane-list.hidden{transform:translateX(100%)}
+}
+
+/* ── LIST PANE ── */
+.list-header{padding:16px 16px 12px;background:var(--nav-bg);border-bottom:1px solid var(--glass-border);flex-shrink:0}
+.list-title{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:12px}
+.list-search{position:relative}
+.list-search-icon{position:absolute;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:15px;pointer-events:none}
+[dir=ltr] .list-search-icon{left:12px}[dir=rtl] .list-search-icon{right:12px}
+.list-search-inp{width:100%;padding:10px 12px 10px 36px;background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;outline:none;font-size:13px;color:var(--text-primary);font-family:inherit;caret-color:var(--accent);transition:border-color .22s}
+[dir=rtl] .list-search-inp{padding:10px 36px 10px 12px}
+.list-search-inp::placeholder{color:var(--text-secondary);font-family:inherit}
+.list-search-inp:focus{border-color:rgba(34,211,238,.4)}
+
+.conv-list{flex:1;overflow-y:auto;padding:6px 0}
+.conv-list::-webkit-scrollbar{width:4px}
+.conv-list::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:999px}
+
+.conv-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .18s;position:relative}
+[dir=rtl] .conv-item{flex-direction:row-reverse}
+.conv-item:hover{background:var(--glass)}
+.conv-item.active{background:rgba(34,211,238,.08);border-inline-start:2px solid var(--accent)}
+.conv-av-wrap{position:relative;flex-shrink:0}
+.conv-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#020617;overflow:hidden;border:2px solid var(--glass-border)}
+.conv-av img{width:100%;height:100%;object-fit:cover}
+.conv-online{position:absolute;bottom:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#22c55e;border:2px solid var(--navy);animation:pulse 2.4s ease-in-out infinite}
+[dir=rtl] .conv-online{right:auto;left:2px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.conv-info{flex:1;min-width:0}
+.conv-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.conv-name{font-size:14px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.conv-time{font-size:10px;color:var(--text-secondary);flex-shrink:0}
+.conv-bottom{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.conv-last{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.conv-badge{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#020617;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.empty-convs{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+.empty-convs .ei{font-size:44px;margin-bottom:12px}
+.empty-convs .et{font-size:14px;font-weight:600}
+
+/* ── CHAT PANE ── */
+.chat-pane-header{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 16px;height:64px;background:var(--nav-bg);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background .4s}
+[dir=rtl] .chat-pane-header{flex-direction:row-reverse}
+.cp-back{display:none}
+@media(max-width:768px){.cp-back{display:flex}}
+.cp-av-wrap{position:relative;flex-shrink:0}
+.cp-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#020617;overflow:hidden;border:2px solid var(--glass-border)}
+.cp-av img{width:100%;height:100%;object-fit:cover}
+.cp-online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid var(--navy)}
+[dir=rtl] .cp-online-dot{right:auto;left:1px}
+.cp-info{flex:1;min-width:0}
+.cp-name{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.cp-status{font-size:11px;font-weight:500;margin-top:2px}
+.cp-status.online{color:#22c55e}.cp-status.offline{color:var(--text-secondary)}
+.cp-actions{display:flex;gap:8px}
+.cp-action{width:34px;height:34px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);outline:none;transition:all .22s}
+.cp-action:hover{border-color:var(--accent);color:var(--text-primary)}
+.cp-action:active{transform:scale(.84)}
+
+/* No conversation selected */
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-secondary);text-align:center;padding:24px}
+.chat-empty .ce-icon{font-size:64px;margin-bottom:16px}
+.chat-empty .ce-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.chat-empty .ce-sub{font-size:13px;line-height:1.6}
+
+/* MESSAGES AREA */
+.msgs-area{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:3px;scroll-behavior:smooth}
+.msgs-area::-webkit-scrollbar{width:4px}
+.msgs-area::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:999px}
+
+.date-div{display:flex;align-items:center;gap:10px;margin:8px 0 4px}
+.date-div::before,.date-div::after{content:'';flex:1;height:1px;background:var(--glass-border)}
+.date-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);padding:0 6px;white-space:nowrap}
+
+.msg-row{display:flex;flex-direction:column;animation:msgFadeIn .28s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes msgFadeIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.msg-row.sent{align-items:flex-end}.msg-row.recv{align-items:flex-start}
+.msg-inner{display:flex;align-items:flex-end;gap:7px}
+.msg-row.sent .msg-inner{flex-direction:row-reverse}
+[dir=rtl] .msg-row.sent .msg-inner{flex-direction:row}
+[dir=rtl] .msg-row.recv .msg-inner{flex-direction:row-reverse}
+.mini-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#020617;align-self:flex-end;margin-bottom:2px;overflow:hidden}
+.mini-av img{width:100%;height:100%;object-fit:cover}
+.msg-row.sent .mini-av{display:none}
+
+.bubble{max-width:72%;padding:9px 13px;border-radius:20px;font-size:13.5px;line-height:1.55;color:var(--text-primary);word-break:break-word;transition:transform .18s}
+.bubble:active{transform:scale(.97)}
+.msg-row.sent .bubble{background:linear-gradient(135deg,rgba(34,211,238,.20),rgba(110,231,183,.13));border:1px solid rgba(34,211,238,.22);border-bottom-right-radius:4px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+[dir=rtl] .msg-row.sent .bubble{border-bottom-right-radius:20px;border-bottom-left-radius:4px}
+.msg-row.recv .bubble{background:var(--card-bg);border:1px solid var(--glass-border);border-bottom-left-radius:4px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+[dir=rtl] .msg-row.recv .bubble{border-bottom-left-radius:20px;border-bottom-right-radius:4px}
+
+/* image msg */
+.img-bubble{padding:4px;background:transparent!important;border:none!important;backdrop-filter:none!important}
+.img-bubble img{max-width:220px;max-height:200px;border-radius:14px;display:block;cursor:pointer;object-fit:cover;transition:opacity .3s}
+.img-bubble img:hover{opacity:.9}
+
+/* voice msg */
+.voice-bubble{min-width:200px;padding:10px 13px;display:flex;align-items:center;gap:9px}
+.v-play{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#020617;outline:none;transition:all .22s;box-shadow:0 4px 12px rgba(34,211,238,.28)}
+.v-play:active{transform:scale(.83)}
+.v-wf{flex:1;display:flex;align-items:center;gap:2px;height:26px}
+.v-bar{flex:1;border-radius:999px;min-width:2px;background:var(--glass-border);transition:background .25s}
+.v-bar.played{background:var(--accent)}
+.v-dur{font-size:10px;font-weight:700;color:var(--text-secondary);flex-shrink:0}
+
+.msg-time{font-size:10px;color:var(--text-secondary);font-weight:500;margin-top:3px;padding:0 3px;display:flex;align-items:center;gap:4px}
+.msg-row.recv .msg-time{padding-inline-start:33px}
+.tick{font-size:11px;color:var(--accent)}.tick.seen{color:var(--accent2)}
+
+/* typing indicator */
+.typing-row{display:flex;align-items:flex-end;gap:7px;animation:msgFadeIn .3s ease both;padding:4px 0}
+.typing-bubble{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:20px;border-bottom-left-radius:4px;padding:11px 14px;display:flex;align-items:center;gap:4px;backdrop-filter:blur(18px)}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--text-secondary);animation:bounce 1.2s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.18s}.tdot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* INPUT AREA */
+.input-area{flex-shrink:0;padding:10px 14px 14px;background:var(--nav-bg);border-top:1px solid var(--glass-border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background .4s}
+.rec-bar{display:none;align-items:center;gap:8px;margin-bottom:8px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.24);border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;color:#f87171}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:recPulse 1s ease-in-out infinite;flex-shrink:0}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.rec-timer{margin-inline-start:auto;font-variant-numeric:tabular-nums}
+.input-row{display:flex;align-items:center;gap:8px}
+[dir=rtl] .input-row{flex-direction:row-reverse}
+.inp-side{width:40px;height:40px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);outline:none;flex-shrink:0;transition:all .22s}
+.inp-side:hover{border-color:var(--accent);color:var(--text-primary)}
+.inp-side:active{transform:scale(.84)}
+.inp-side.recording{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.5);color:#f87171}
+.inp-wrap{flex:1}
+.chat-inp{width:100%;padding:10px 16px;background:var(--glass);border:1px solid var(--glass-border);border-radius:999px;outline:none;font-size:14px;color:var(--text-primary);font-family:inherit;caret-color:var(--accent);transition:border-color .22s,background .22s}
+.chat-inp::placeholder{color:var(--text-secondary);font-family:inherit}
+.chat-inp:focus{border-color:rgba(34,211,238,.45);background:var(--glass-strong);box-shadow:0 0 0 3px rgba(34,211,238,.06)}
+.send-btn{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#020617;outline:none;box-shadow:0 4px 16px rgba(34,211,238,.32);transition:all .25s}
+.send-btn:hover{transform:scale(1.10);box-shadow:0 8px 22px rgba(34,211,238,.48)}
+.send-btn:active{transform:scale(.82)}
+.send-btn:disabled{opacity:.5;pointer-events:none}
+#fileIn{display:none}
+
+/* IMAGE VIEWER OVERLAY */
+.img-viewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.img-viewer img{max-width:94vw;max-height:94vh;border-radius:14px;object-fit:contain}
+
+/* TOP NAV override for chat page */
+.main-header{flex-shrink:0;background:var(--nav-bg);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);transition:background .4s}
+.mh-inner{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:60px;max-width:100%;gap:12px}
+.mh-actions{display:flex;gap:8px}
+
+/* ─── PRO SEARCH ADDITIONS ──────────────────────────────────────── */
+
+/* Search input wrapper — holds icon + input + clear btn in one row */
+.srch-wrap{position:relative;display:flex;align-items:center}
+.srch-clear{position:absolute;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--text-secondary);color:var(--navy);
+  font-size:10px;font-weight:900;line-height:1;
+  display:none;align-items:center;justify-content:center;
+  transition:all .18s;z-index:2;font-family:inherit}
+[dir=ltr] .srch-clear{right:10px}[dir=rtl] .srch-clear{left:10px}
+.srch-clear:hover{background:var(--accent);transform:translateY(-50%) scale(1.15)}
+.srch-clear.visible{display:flex}
+
+/* Section label (Recent / Results) */
+.srch-section{padding:8px 14px 4px;font-size:10px;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:space-between}
+.srch-section-clear{font-size:10px;font-weight:700;color:var(--accent);
+  cursor:pointer;letter-spacing:0;text-transform:none;
+  transition:opacity .18s;padding:2px 6px;border-radius:6px}
+.srch-section-clear:hover{opacity:.7}
+
+/* Highlight matched text */
+.srch-hi{background:rgba(34,211,238,.22);color:var(--accent);
+  border-radius:3px;padding:0 2px;font-weight:800}
+[data-theme=light] .srch-hi{background:rgba(8,145,178,.15);color:var(--accent)}
+
+/* Recent / frequent badge */
+.srch-badge{font-size:9px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 7px;border-radius:999px;flex-shrink:0}
+.srch-badge.recent{background:rgba(129,140,248,.15);color:#818cf8}
+.srch-badge.frequent{background:rgba(34,211,238,.15);color:var(--accent)}
+
+/* Divider between sections */
+.srch-divider{height:1px;background:var(--glass-border);margin:4px 14px}
+
+/* Empty state */
+.srch-empty{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:44px 20px;color:var(--text-secondary);text-align:center}
+.srch-empty-icon{font-size:42px;margin-bottom:10px;
+  animation:emptyBounce 2s ease-in-out infinite}
+@keyframes emptyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.srch-empty-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.srch-empty-sub{font-size:12px;line-height:1.6}
+
+/* Per-item fade-in stagger */
+@keyframes itemFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.conv-item{animation:itemFadeIn .22s ease both}
+
+/* Hover scale on conv-item */
+.conv-item:hover{transform:scale(1.012);background:var(--glass)}
+.conv-item:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<div class="app-shell">
+  <!-- TOP HEADER -->
+  <div class="main-header">
+    <div class="mh-inner">
+      <a href="home.html" class="logo-text" style="font-size:16px">ECOTRADE</a>
+      <div style="display:flex;align-items:center;gap:6px;font-size:16px;font-weight:700;color:var(--text-primary)" data-t="messages">Messages</div>
+      <div class="mh-actions">
+        <button class="inp-side" onclick="toggleLang()">🌐</button>
+        <button class="inp-side" data-theme-icon onclick="toggleTheme()">☀️</button>
+        <a href="add.html" class="inp-side" title="Add listing" style="text-decoration:none;font-size:18px">+</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="split">
+    <!-- ══ LIST PANE ══ -->
+    <div class="pane-list" id="paneList">
+      <div class="list-header">
+        <div class="list-title" data-t="messages">Messages</div>
+        <div class="list-search srch-wrap">
+          <span class="list-search-icon">🔍</span>
+          <input class="list-search-inp" id="chatSearch" data-tp="search_chats" placeholder="Search chats…" autocomplete="off"/>
+          <button class="srch-clear" id="srchClear" title="Clear" aria-label="Clear search">✕</button>
+        </div>
+      </div>
+      <!-- User list (all users to start new chat) -->
+      <div class="conv-list" id="convList">
+        <div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:13px" data-t="loading">Loading…</div>
+      </div>
+    </div>
+
+    <!-- ══ CHAT PANE ══ -->
+    <div class="pane-chat" id="paneChat">
+      <!-- Empty state (desktop) -->
+      <div class="chat-empty" id="chatEmpty">
+        <div class="ce-icon">💬</div>
+        <div class="ce-title" data-t="messages">Messages</div>
+        <div class="ce-sub" data-t="no_chats">Select a user from the list to start chatting.</div>
+      </div>
+
+      <!-- Chat header (hidden until chat open) -->
+      <div class="chat-pane-header" id="chatHeader" style="display:none">
+        <button class="icon-btn cp-back" id="backBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="cp-av-wrap">
+          <div class="cp-av" id="cpAv">?</div>
+          <div class="cp-online-dot" id="cpOnlineDot" style="display:none"></div>
+        </div>
+        <div class="cp-info">
+          <div class="cp-name" id="cpName">—</div>
+          <div class="cp-status" id="cpStatus">—</div>
+        </div>
+        <div class="cp-actions">
+          <button class="cp-action" id="callBtn" title="Call" onclick="showToast('📞 Calling…')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          </button>
+          <button class="cp-action" onclick="showToast('📹 Video call coming soon')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="msgs-area" id="msgsArea" style="display:none"></div>
+
+      <!-- Input -->
+      <div class="input-area" id="inputArea" style="display:none">
+        <div class="rec-bar" id="recBar">
+          <div class="rec-dot"></div>
+          <span data-t="recording">🔴 Recording…</span>
+          <span class="rec-timer" id="recTimer">0:00</span>
+        </div>
+        <div id="filePreviewWrap" style="display:none;margin-bottom:8px;position:relative;width:fit-content">
+          <img id="filePreviewImg" style="max-height:90px;border-radius:12px;border:1px solid var(--glass-border)" src="" alt=""/>
+          <button id="removeFileBtn" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#ef4444;border:none;cursor:pointer;color:white;font-size:12px;display:flex;align-items:center;justify-content:center" onclick="clearFile()">✕</button>
+        </div>
+        <div class="input-row">
+          <button class="inp-side" id="attachBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <input type="file" id="fileIn" accept="image/*"/>
+          <div class="inp-wrap">
+            <input class="chat-inp" id="chatInp" data-tp="type_message" placeholder="Type a message…"/>
+          </div>
+          <button class="inp-side" id="micBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <button class="send-btn" id="sendBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div id="bnav-slot"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+<script>
+// ─── STATE ────────────────────────────────────────────
+let currentUser  = null;
+let targetUser   = null;
+let chatId       = null;
+let unsubMsgs    = null;
+let unsubTarget  = null;
+let unsubUsers   = null;
+let typingTimer  = null;
+let isRecording  = false;
+let mediaRecorder= null;
+let audioChunks  = [];
+let recInterval  = null;
+let recSecs      = 0;
+let pendingFile  = null;
+let voiceAudios  = {};
+let allUsers     = [];
+let searchQ      = '';
+let lastDateLabel= '';
+
+// ─── DOM ──────────────────────────────────────────────
+const convList = document.getElementById('convList');
+const msgsArea = document.getElementById('msgsArea');
+const chatInp  = document.getElementById('chatInp');
+const sendBtn  = document.getElementById('sendBtn');
+const paneList = document.getElementById('paneList');
+const paneChat = document.getElementById('paneChat');
+
+// ─── SCROLL ───────────────────────────────────────────
+function scrollBottom(instant=false) {
+  requestAnimationFrame(()=>msgsArea.scrollTo({top:msgsArea.scrollHeight,behavior:instant?'auto':'smooth'}));
+}
+
+// ─── FORMAT LAST MSG ──────────────────────────────────
+function lastMsgLabel(m) {
+  if (!m) return '';
+  if (m.type==='image') return tr('image_msg');
+  if (m.type==='voice') return '🎤 '+tr('voice_note');
+  return m.text||'';
+}
+
+// ─── RENDER USER LIST ─────────────────────────────────
+function renderUserList() {
+  const filtered = searchQ
+    ? allUsers.filter(u=>(u.username||u.email||'').toLowerCase().includes(searchQ)&&u.uid!==currentUser.uid)
+    : allUsers.filter(u=>u.uid!==currentUser.uid);
+
+  if (!filtered.length) {
+    convList.innerHTML=`<div class="empty-convs"><div class="ei">👥</div><div class="et" data-t="no_users">No users found.</div></div>`;
+    applyTranslations(); return;
+  }
+  convList.innerHTML='';
+  filtered.forEach(u=>{
+    const letter = avatarLetter(u.username||u.email||'?');
+    const item   = document.createElement('div');
+    item.className = 'conv-item'+(targetUser&&targetUser.uid===u.uid?' active':'');
+    item.innerHTML = `
+      <div class="conv-av-wrap">
+        <div class="conv-av">${u.photoURL?`<img src="${escHtml(u.photoURL)}" alt=""/>`:'<span>'+letter+'</span>'}</div>
+        ${u.online?'<div class="conv-online"></div>':''}
+      </div>
+      <div class="conv-info">
+        <div class="conv-top">
+          <div class="conv-name">${escHtml(u.username||u.email||'User')}</div>
+          <div class="conv-time">${u.online?'●':''}</div>
+        </div>
+        <div class="conv-bottom">
+          <div class="conv-last">${u.online?tr('online'):tr('offline')}</div>
+        </div>
+      </div>`;
+    item.addEventListener('click', ()=>openChat(u));
+    convList.appendChild(item);
+  });
+}
+
+// ─── OPEN CHAT ────────────────────────────────────────
+function openChat(user) {
+  // ── 1. Tear down any previous listeners ───────────────────────
+  if (unsubMsgs)   { unsubMsgs();   unsubMsgs   = null; }
+  if (unsubTarget) { unsubTarget(); unsubTarget = null; }
+
+  targetUser = user;
+  chatId     = getChatId(currentUser.uid, user.uid);
+
+  // ── 2. Force all chat panels visible ──────────────────────────
+  //       These may have inline style="display:none" from the HTML,
+  //       so we always override them here — no CSS class needed.
+  const chatHeaderEl = document.getElementById('chatHeader');
+  const msgsAreaEl   = document.getElementById('msgsArea');
+  const inputAreaEl  = document.getElementById('inputArea');
+  const chatEmptyEl  = document.getElementById('chatEmpty');
+
+  if (chatEmptyEl)  chatEmptyEl.style.display  = 'none';   // hide placeholder
+  if (chatHeaderEl) chatHeaderEl.style.display = 'flex';   // header row
+  if (msgsAreaEl)   msgsAreaEl.style.display   = 'flex';   // messages column
+  if (inputAreaEl)  inputAreaEl.style.display  = 'block';  // input bar
+
+  // ── 3. Clear search state so list never stays in search mode ──
+  searchQ = '';
+  const srchInp = document.getElementById('chatSearch');
+  if (srchInp) {
+    srchInp.value = '';
+    const clearBtn = document.getElementById('srchClear');
+    if (clearBtn) clearBtn.classList.remove('visible');
+  }
+
+  // ── 4. Reset message area ──────────────────────────────────────
+  msgsArea.innerHTML = '';
+  lastDateLabel = '';
+
+  // ── 5. Populate chat header ────────────────────────────────────
+  const cpAv = document.getElementById('cpAv');
+  if (cpAv) {
+    cpAv.textContent = '';
+    cpAv.style.removeProperty('background');
+    if (user.photoURL) {
+      cpAv.innerHTML = `<img src="${escHtml(user.photoURL)}" alt=""/>`;
+    } else {
+      cpAv.textContent = avatarLetter(user.username || user.email || '?');
+    }
+  }
+
+  const cpNameEl = document.getElementById('cpName');
+  if (cpNameEl) cpNameEl.textContent = user.username || user.email || 'User';
+
+  // ── 6. Set initial online status in header ─────────────────────
+  const cpOnlineDot = document.getElementById('cpOnlineDot');
+  const cpStatus    = document.getElementById('cpStatus');
+  const isOnline    = !!user.online;
+  if (cpOnlineDot) cpOnlineDot.style.display = isOnline ? '' : 'none';
+  if (cpStatus) {
+    cpStatus.textContent = isOnline ? tr('online') : tr('offline');
+    cpStatus.className   = 'cp-status ' + (isOnline ? 'online' : 'offline');
+  }
+
+  // ── 7. Mobile: slide to chat pane, hide list pane ─────────────
+  paneChat.classList.add('open');
+  paneList.classList.add('hidden');
+
+  // ── 8. Re-render list (marks active row) ──────────────────────
+  renderUserList();
+
+  // ── 9. Real-time target user status ───────────────────────────
+  unsubTarget = db.collection('users').doc(user.uid).onSnapshot(snap => {
+    if (!snap.exists) return;
+    const d      = snap.data();
+    const online = !!d.online;
+    if (cpOnlineDot) cpOnlineDot.style.display = online ? '' : 'none';
+    if (cpStatus) {
+      cpStatus.textContent = online ? tr('online') : tr('offline');
+      cpStatus.className   = 'cp-status ' + (online ? 'online' : 'offline');
+    }
+  });
+
+  // ── 10. Subscribe messages + enable input ─────────────────────
+  subscribeMessages();
+  sendBtn.disabled = false;
+  chatInp.focus();
+}
+
+// ─── CLOSE CHAT (mobile back) ─────────────────────────
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  paneChat.classList.remove('open');
+  paneList.classList.remove('hidden');
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
+  if(unsubTarget){unsubTarget();unsubTarget=null;}
+  targetUser=null; chatId=null;
+  document.getElementById('chatEmpty').style.display='flex';
+  document.getElementById('chatHeader').style.display='none';
+  document.getElementById('msgsArea').style.display='none';
+  document.getElementById('inputArea').style.display='none';
+  renderUserList();
+});
+
+// ─── SUBSCRIBE MESSAGES ───────────────────────────────
+function subscribeMessages() {
+  if (!chatId) return;
+  const ref = db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc');
+  let init = false;
+
+  unsubMsgs = ref.onSnapshot(snap=>{
+    if (!init) {
+      msgsArea.innerHTML=''; lastDateLabel='';
+      snap.docs.forEach(doc=>appendMsg(doc.id, doc.data()));
+      init=true; scrollBottom(true);
+    } else {
+      snap.docChanges().forEach(ch=>{
+        if(ch.type==='added'){ appendMsg(ch.doc.id,ch.doc.data()); scrollBottom(); }
+        if(ch.type==='modified'){
+          const existing=msgsArea.querySelector(`[data-mid="${ch.doc.id}"]`);
+          if(existing){
+            const d=ch.doc.data();
+            const tick=existing.querySelector('.tick');
+            if(tick&&d.seen){tick.classList.add('seen');tick.textContent='✓✓';}
+          }
+        }
+      });
+    }
+    // mark incoming as seen
+    snap.docs.forEach(doc=>{
+      const d=doc.data();
+      if(d.receiverId===currentUser.uid&&!d.seen){
+        doc.ref.update({seen:true}).catch(()=>{});
+      }
+    });
+    if(!snap.empty) document.getElementById('chatEmpty').style.display='none';
+  });
+}
+
+// ─── APPEND MESSAGE ───────────────────────────────────
+function appendMsg(id, d) {
+  const isSent = d.senderId===currentUser.uid;
+  const ts     = d.timestamp;
+  const dateLabel = fmtDateLabel(ts);
+
+  if (dateLabel && dateLabel!==lastDateLabel) {
+    lastDateLabel=dateLabel;
+    const div=document.createElement('div'); div.className='date-div';
+    div.innerHTML=`<span class="date-label">${dateLabel}</span>`;
+    msgsArea.appendChild(div);
+  }
+
+  const row=document.createElement('div');
+  row.className=`msg-row ${isSent?'sent':'recv'}`;
+  row.dataset.mid=id;
+
+  let bubbleHtml='';
+  if (d.type==='image') {
+    bubbleHtml=`<div class="bubble img-bubble"><img src="${escHtml(d.mediaUrl||'')}" alt="image" loading="lazy" onclick="openImgViewer('${escHtml(d.mediaUrl||'')}')"/></div>`;
+  } else if (d.type==='voice') {
+    const wfid='wf_'+id.slice(0,8); const did='dur_'+id.slice(0,8);
+    bubbleHtml=`<div class="bubble voice-bubble"><button class="v-play" onclick="toggleVoice('${id}','${escHtml(d.mediaUrl||'')}',this)"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button><div class="v-wf" id="${wfid}"></div><span class="v-dur" id="${did}">${d.duration||'0:00'}</span></div>`;
+  } else {
+    bubbleHtml=`<div class="bubble">${escHtml(d.text||'')}</div>`;
+  }
+
+  const miniAv = isSent?'':`<div class="mini-av">${targetUser?.photoURL?`<img src="${escHtml(targetUser.photoURL)}" alt=""/>`:(avatarLetter(targetUser?.username||'?'))}</div>`;
+
+  row.innerHTML=`
+    <div class="msg-inner">
+      ${miniAv}
+      ${bubbleHtml}
+    </div>
+    <div class="msg-time" ${!isSent?'style="padding-inline-start:33px"':''}>
+      ${fmtTime(ts)}
+      ${isSent?`<span class="tick ${d.seen?'seen':''}">✓✓</span>`:''}
+    </div>`;
+
+  msgsArea.appendChild(row);
+
+  // build waveform
+  if (d.type==='voice') {
+    const wfEl=document.getElementById('wf_'+id.slice(0,8));
+    if(wfEl){ const hs=[28,52,38,70,86,60,44,78,64,48,74,40,58,88,50,68,42,62,76,48,34,72,54];
+      hs.forEach((h,i)=>{ const b=document.createElement('div'); b.className='v-bar'+(i<8?' played':''); b.style.height=h+'%'; wfEl.appendChild(b); }); }
+  }
+}
+
+// ─── VOICE PLAYER ─────────────────────────────────────
+const PLAY_SVG  =`<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+const PAUSE_SVG =`<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+function toggleVoice(id,url,btn) {
+  if(!voiceAudios[id]) voiceAudios[id]=new Audio(url);
+  const a=voiceAudios[id];
+  const wfEl=document.getElementById('wf_'+id.slice(0,8));
+  const durEl=document.getElementById('dur_'+id.slice(0,8));
+  if(!a.paused){a.pause();btn.innerHTML=PLAY_SVG;return;}
+  Object.entries(voiceAudios).forEach(([k,v])=>{if(k!==id&&!v.paused){v.pause();}});
+  document.querySelectorAll('.v-play').forEach(b=>{if(b!==btn)b.innerHTML=PLAY_SVG;});
+  a.play().catch(()=>{});
+  btn.innerHTML=PAUSE_SVG;
+  a.ontimeupdate=()=>{
+    const pct=a.duration?a.currentTime/a.duration:0;
+    wfEl?.querySelectorAll('.v-bar').forEach((b,i,arr)=>b.classList.toggle('played',i/arr.length<pct));
+    const rem=a.duration-a.currentTime;
+    if(durEl) durEl.textContent='0:'+String(Math.ceil(rem||0)).padStart(2,'0');
+  };
+  a.onended=()=>{btn.innerHTML=PLAY_SVG;wfEl?.querySelectorAll('.v-bar').forEach(b=>b.classList.remove('played'));if(durEl)durEl.textContent='0:00';};
+}
+
+// ─── SEND TEXT / IMAGE ────────────────────────────────
+async function sendMessage() {
+  if (!chatId||!currentUser||!targetUser) return;
+  if (pendingFile) { await sendImage(); return; }
+  const text=chatInp.value.trim(); if (!text) return;
+  chatInp.value=''; sendBtn.disabled=true;
+  clearTyping();
+  const data={senderId:currentUser.uid,receiverId:targetUser.uid,text,type:'text',timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false};
+  await db.collection('chats').doc(chatId).collection('messages').add(data).catch(e=>showToast('Send failed: '+e.message));
+  await db.collection('chats').doc(chatId).set({participants:[currentUser.uid,targetUser.uid],lastMessage:text,lastTimestamp:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+  sendBtn.disabled=false;
+}
+
+async function sendImage() {
+  if (!pendingFile||!chatId) return;
+  sendBtn.disabled=true; showToast('Uploading…');
+  try {
+    const ref=storage.ref(`chat/${chatId}/${Date.now()}_${pendingFile.name}`);
+    await ref.put(pendingFile);
+    const url=await ref.getDownloadURL();
+    await db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid,receiverId:targetUser.uid,type:'image',mediaUrl:url,text:'',timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false});
+    await db.collection('chats').doc(chatId).set({participants:[currentUser.uid,targetUser.uid],lastMessage:tr('image_msg'),lastTimestamp:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+  } catch(e){showToast('Upload failed: '+e.message);}
+  clearFile(); sendBtn.disabled=false;
+}
+
+sendBtn.addEventListener('click', sendMessage);
+chatInp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
+chatInp.addEventListener('input', ()=>{
+  sendBtn.disabled=!chatInp.value.trim()&&!pendingFile;
+  setTyping();
+});
+
+// ─── ATTACH ───────────────────────────────────────────
+document.getElementById('attachBtn').addEventListener('click', ()=>document.getElementById('fileIn').click());
+document.getElementById('fileIn').addEventListener('change', e=>{
+  const file=e.target.files[0]; if(!file)return;
+  pendingFile=file;
+  const reader=new FileReader();
+  reader.onload=ev=>{ document.getElementById('filePreviewImg').src=ev.target.result; document.getElementById('filePreviewWrap').style.display='block'; };
+  reader.readAsDataURL(file);
+  sendBtn.disabled=false;
+});
+function clearFile() {
+  pendingFile=null; document.getElementById('filePreviewImg').src='';
+  document.getElementById('filePreviewWrap').style.display='none';
+  document.getElementById('fileIn').value='';
+  sendBtn.disabled=!chatInp.value.trim();
+}
+
+// ─── VOICE RECORDING ──────────────────────────────────
+document.getElementById('micBtn').addEventListener('click', async ()=>{
+  if (!chatId){showToast('Open a chat first');return;}
+  if (isRecording){stopRecording();return;}
+  try {
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[]; recSecs=0;
+    mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      const dur='0:'+String(recSecs).padStart(2,'0');
+      showToast('Sending voice message…');
+      try {
+        const ref=storage.ref(`chat/${chatId}/voice_${Date.now()}.webm`);
+        await ref.put(blob);
+        const url=await ref.getDownloadURL();
+        await db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid,receiverId:targetUser.uid,type:'voice',mediaUrl:url,duration:dur,text:'',timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false});
+        await db.collection('chats').doc(chatId).set({participants:[currentUser.uid,targetUser.uid],lastMessage:'🎤 Voice note',lastTimestamp:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+      } catch(e){showToast('Voice send failed: '+e.message);}
+    };
+    mediaRecorder.start();
+    isRecording=true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('recBar').style.display='flex';
+    recInterval=setInterval(()=>{ recSecs++; document.getElementById('recTimer').textContent='0:'+String(recSecs).padStart(2,'0'); if(recSecs>=120)stopRecording(); },1000);
+  } catch(e){showToast('Mic access denied: '+e.message);}
+});
+
+function stopRecording() {
+  if(!isRecording)return;
+  mediaRecorder?.stop(); isRecording=false;
+  clearInterval(recInterval); recSecs=0;
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('recBar').style.display='none';
+}
+
+// ─── TYPING INDICATOR ─────────────────────────────────
+let typingRef = null;
+function setTyping() {
+  if (!chatId||!currentUser) return;
+  typingRef=db.collection('chats').doc(chatId);
+  typingRef.set({[`typing_${currentUser.uid}`]:true},{merge:true}).catch(()=>{});
+  clearTimeout(typingTimer);
+  typingTimer=setTimeout(clearTyping, 3000);
+}
+function clearTyping() {
+  if (!chatId||!currentUser||!typingRef) return;
+  typingRef.set({[`typing_${currentUser.uid}`]:false},{merge:true}).catch(()=>{});
+}
+let unsubTyping=null;
+function subscribeTyping() {
+  if(!chatId) return;
+  unsubTyping=db.collection('chats').doc(chatId).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    const d=snap.data();
+    const theyTyping=d?.[`typing_${targetUser?.uid}`];
+    let typingEl=document.getElementById('typingIndicator');
+    if(theyTyping) {
+      if(!typingEl){
+        const row=document.createElement('div');
+        row.className='typing-row'; row.id='typingIndicator';
+        row.innerHTML=`<div class="mini-av">${targetUser?.photoURL?`<img src="${escHtml(targetUser.photoURL)}" alt=""/>`:avatarLetter(targetUser?.username||'?')}</div><div class="typing-bubble"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+        msgsArea.appendChild(row); scrollBottom();
+      }
+    } else {
+      typingEl?.remove();
+    }
+  });
+}
+
+// ─── IMAGE VIEWER ─────────────────────────────────────
+function openImgViewer(url) {
+  const ov=document.createElement('div'); ov.className='img-viewer';
+  ov.innerHTML=`<img src="${escHtml(url)}" alt=""/>`;
+  ov.addEventListener('click',()=>ov.remove());
+  document.body.appendChild(ov);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PRO SEARCH ENGINE  ·  chat.html
+//  Features: debounce · multi-field · highlight · recent/frequent ·
+//            grouped sections · empty state · cache · ripple
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── CONSTANTS ────────────────────────────────────────────────────
+const SEARCH_DEBOUNCE_MS = 300;   // delay before firing Firestore
+const MAX_RESULTS        = 10;    // hard limit per section
+const LS_RECENT          = 'et_chat_recents';   // localStorage key
+const LS_FREQUENT        = 'et_chat_frequent';  // localStorage key
+const MAX_RECENTS        = 8;     // recent UIDs kept
+
+// ─── SEARCH STATE ─────────────────────────────────────────────────
+let _searchDebounce = null;
+let _lastQuery      = '';
+let _searchCache    = {};   // query → { ts, users[] }
+const CACHE_TTL_MS  = 30_000; // cache valid for 30s
+
+// ─── PERSISTENT STORAGE HELPERS ───────────────────────────────────
+
+/** Returns array of recently-opened UIDs (most-recent first) */
+function getRecents() {
+  try { return JSON.parse(localStorage.getItem(LS_RECENT) || '[]'); }
+  catch { return []; }
+}
+
+/** Prepend uid to recents list, capped at MAX_RECENTS */
+function saveRecent(uid) {
+  let list = getRecents().filter(id => id !== uid);
+  list.unshift(uid);
+  if (list.length > MAX_RECENTS) list = list.slice(0, MAX_RECENTS);
+  localStorage.setItem(LS_RECENT, JSON.stringify(list));
+}
+
+/** Returns map of { uid: count } for frequent chats */
+function getFrequent() {
+  try { return JSON.parse(localStorage.getItem(LS_FREQUENT) || '{}'); }
+  catch { return {}; }
+}
+
+/** Increment frequency counter for uid */
+function bumpFrequent(uid) {
+  const map = getFrequent();
+  map[uid] = (map[uid] || 0) + 1;
+  localStorage.setItem(LS_FREQUENT, JSON.stringify(map));
+}
+
+/** Top N frequent UIDs sorted by count descending */
+function getTopFrequent(n = 5) {
+  const map = getFrequent();
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([uid]) => uid);
+}
+
+/** Lookup a user object from the in-memory allUsers list */
+function getUserById(uid) {
+  return allUsers.find(u => u.uid === uid) || null;
+}
+
+// ─── TEXT HIGHLIGHT ───────────────────────────────────────────────
+
+/**
+ * highlightMatch(text, query)
+ * Wraps the first case-insensitive match of query inside text with
+ * a <span class="srch-hi"> element. Returns safe HTML string.
+ */
+function highlightMatch(text, query) {
+  const safe = escHtml(text);
+  if (!query) return safe;
+  const idx = safe.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return safe;
+  return safe.slice(0, idx)
+    + `<span class="srch-hi">${safe.slice(idx, idx + query.length)}</span>`
+    + safe.slice(idx + query.length);
+}
+
+// ─── BUILD SINGLE ROW ─────────────────────────────────────────────
+
+/**
+ * buildConvItem(user, query, badge)
+ * Constructs a .conv-item element matching the existing design.
+ * query   — highlighted substring ('' for recents with no query)
+ * badge   — 'recent' | 'frequent' | '' (no badge)
+ */
+function buildConvItem(user, query = '', badge = '', delay = 0) {
+  const letter  = avatarLetter(user.username || user.email || '?');
+  const name    = user.username || user.email || 'User';
+  const isOnline = !!user.online;
+  const isActive = targetUser && targetUser.uid === user.uid;
+
+  const item = document.createElement('div');
+  item.className = 'conv-item' + (isActive ? ' active' : '');
+  item.style.animationDelay = delay + 'ms';
+
+  // Badge HTML
+  const badgeHTML = badge
+    ? `<span class="srch-badge ${badge}">${badge === 'recent' ? '🕐 Recent' : '⚡ Frequent'}</span>`
+    : '';
+
+  item.innerHTML = `
+    <div class="conv-av-wrap">
+      <div class="conv-av">
+        ${user.photoURL
+          ? `<img src="${escHtml(user.photoURL)}" alt=""/>`
+          : `<span>${letter}</span>`}
+      </div>
+      ${isOnline ? '<div class="conv-online"></div>' : ''}
+    </div>
+    <div class="conv-info">
+      <div class="conv-top">
+        <div class="conv-name">${highlightMatch(name, query)}</div>
+        <div class="conv-time" style="display:flex;align-items:center;gap:4px">
+          ${badgeHTML}
+          ${isOnline ? '<span style="color:#22c55e;font-size:9px">●</span>' : ''}
+        </div>
+      </div>
+      <div class="conv-bottom">
+        <div class="conv-last" style="font-size:11px">
+          ${isOnline
+            ? `<span style="color:#22c55e">● ${tr('online')}</span>`
+            : `<span>${tr('offline')}</span>`}
+          ${user.email && user.email !== name
+            ? `<span style="margin-inline-start:4px;opacity:.5">· ${escHtml(user.email)}</span>`
+            : ''}
+        </div>
+      </div>
+    </div>`;
+
+  // Ripple + click → openChatPro
+  addRipple(item);
+  item.addEventListener('click', () => openChatPro(user));
+  return item;
+}
+
+// ─── OPEN CHAT (enhanced) ────────────────────────────────────────
+
+/**
+ * openChatPro  —  wrapper called by the pro search engine.
+ * Saves interaction history, then delegates entirely to openChat()
+ * which now handles search clearing + display/visibility toggling.
+ */
+function openChatPro(user) {
+  saveRecent(user.uid);
+  bumpFrequent(user.uid);
+  // All display toggling + search clearing is done inside openChat()
+  openChat(user);
+}
+
+// ─── RENDER HELPERS ───────────────────────────────────────────────
+
+/** Render a section label row */
+function renderSectionLabel(title, onClear = null) {
+  const row = document.createElement('div');
+  row.className = 'srch-section';
+  row.innerHTML = `<span>${title}</span>`;
+  if (onClear) {
+    const btn = document.createElement('span');
+    btn.className = 'srch-section-clear';
+    btn.textContent = 'Clear all';
+    btn.addEventListener('click', onClear);
+    row.appendChild(btn);
+  }
+  return row;
+}
+
+/** Thin HR between sections */
+function renderDivider() {
+  const d = document.createElement('div'); d.className = 'srch-divider'; return d;
+}
+
+/** Empty state block */
+function renderEmptyState(icon, title, sub) {
+  const el = document.createElement('div');
+  el.className = 'srch-empty';
+  el.innerHTML = `
+    <div class="srch-empty-icon">${icon}</div>
+    <div class="srch-empty-title">${title}</div>
+    <div class="srch-empty-sub">${sub}</div>`;
+  return el;
+}
+
+// ─── MAIN RENDER FUNCTION ─────────────────────────────────────────
+
+/**
+ * renderUserList()
+ * Called by existing code (onSnapshot, openChat, backBtn).
+ * Now delegates to the pro engine based on current search state.
+ */
+function renderUserList() {
+  const rawQ = (document.getElementById('chatSearch')?.value || searchQ || '').trim();
+  if (rawQ) {
+    renderSearchResults(rawQ);
+  } else {
+    renderDefaultList();
+  }
+}
+
+// ─── DEFAULT LIST (no search active) ─────────────────────────────
+
+function renderDefaultList() {
+  convList.innerHTML = '';
+  const others = allUsers.filter(u => u.uid !== currentUser?.uid);
+
+  if (!others.length) {
+    convList.appendChild(renderEmptyState('👥', tr('no_users'), 'No members yet.'));
+    return;
+  }
+
+  // Section 1: Frequent + Recent (combined, deduped, user must be in allUsers)
+  const recentIds   = getRecents();
+  const frequentIds = getTopFrequent(5);
+  const pinnedIds   = [...new Set([...frequentIds, ...recentIds])].slice(0, 6);
+  const pinnedUsers = pinnedIds
+    .map(id => getUserById(id))
+    .filter(u => u && u.uid !== currentUser?.uid);
+
+  if (pinnedUsers.length) {
+    convList.appendChild(renderSectionLabel('⭐ Recent & Frequent', () => {
+      localStorage.removeItem(LS_RECENT);
+      localStorage.removeItem(LS_FREQUENT);
+      renderDefaultList();
+    }));
+    pinnedUsers.forEach((u, i) => {
+      const badge = frequentIds.includes(u.uid)
+        ? (recentIds[0] === u.uid ? 'recent' : 'frequent')
+        : 'recent';
+      convList.appendChild(buildConvItem(u, '', badge, i * 35));
+    });
+    convList.appendChild(renderDivider());
+  }
+
+  // Section 2: All other users
+  const pinSet  = new Set(pinnedIds);
+  const rest    = others.filter(u => !pinSet.has(u.uid));
+  if (rest.length) {
+    convList.appendChild(renderSectionLabel('👥 All Members'));
+    rest.forEach((u, i) => convList.appendChild(buildConvItem(u, '', '', i * 28)));
+  }
+}
+
+// ─── SEARCH RESULTS ───────────────────────────────────────────────
+
+function renderSearchResults(query) {
+  convList.innerHTML = '';
+  const q = query.toLowerCase().trim();
+
+  // ── Cache check ───────────────────────────────────────────────
+  const cached = _searchCache[q];
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+    _renderResultRows(cached.users, query);
+    return;
+  }
+
+  // ── Local filter first (instant, zero latency) ────────────────
+  // Search username AND email (case-insensitive, trimmed)
+  const localHits = allUsers
+    .filter(u => u.uid !== currentUser?.uid)
+    .filter(u => {
+      const name  = (u.username  || '').toLowerCase();
+      const email = (u.email     || '').toLowerCase();
+      const dname = (u.displayName || '').toLowerCase();
+      return name.includes(q) || email.includes(q) || dname.includes(q);
+    })
+    .slice(0, MAX_RESULTS);
+
+  // Render local hits immediately while Firestore resolves
+  if (localHits.length) {
+    _renderResultRows(localHits, query);
+    // Cache the local result as a warm cache
+    _searchCache[q] = { ts: Date.now(), users: localHits };
+  }
+
+  // ── Firestore prefix query (enriches local results) ───────────
+  // Only fires if query changed and no valid cache exists
+  if (q === _lastQuery && localHits.length >= MAX_RESULTS) return;
+  _lastQuery = q;
+
+  const end = q.slice(0, -1) + String.fromCharCode(q.charCodeAt(q.length - 1) + 1);
+
+  Promise.all([
+    db.collection('users').orderBy('username').startAt(q).endAt(end).limit(MAX_RESULTS).get(),
+    db.collection('users').orderBy('email').startAt(q).endAt(end).limit(5).get(),
+  ]).then(([snapName, snapEmail]) => {
+    const seen = new Set(localHits.map(u => u.uid));
+    const extra = [];
+    [...snapName.docs, ...snapEmail.docs].forEach(doc => {
+      const d = doc.data();
+      if (!seen.has(d.uid) && d.uid !== currentUser?.uid) {
+        seen.add(d.uid); extra.push(d);
+      }
+    });
+    const merged = [...localHits, ...extra].slice(0, MAX_RESULTS);
+    _searchCache[q] = { ts: Date.now(), users: merged };
+    // Only re-render if query is still active
+    const currentQ = (document.getElementById('chatSearch')?.value || '').trim().toLowerCase();
+    if (currentQ === q) _renderResultRows(merged, query);
+  }).catch(() => {}); // non-fatal — local results already shown
+}
+
+/** Internal: render result rows with section header */
+function _renderResultRows(users, query) {
+  convList.innerHTML = '';
+  if (!users.length) {
+    convList.appendChild(renderEmptyState(
+      '🔍',
+      tr('no_users'),
+      `No results for "${escHtml(query)}"`
+    ));
+    return;
+  }
+  convList.appendChild(renderSectionLabel(`🔎 Results for "${escHtml(query)}"`));
+  users.forEach((u, i) => convList.appendChild(buildConvItem(u, query, '', i * 30)));
+}
+
+// ─── DEBOUNCE ─────────────────────────────────────────────────────
+
+function debounce(fn, ms) {
+  return (...args) => {
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(() => fn(...args), ms);
+  };
+}
+
+// ─── WIRE SEARCH INPUT ────────────────────────────────────────────
+
+(function wireProSearch() {
+  const inp      = document.getElementById('chatSearch');
+  const clearBtn = document.getElementById('srchClear');
+  if (!inp) return;
+
+  const debouncedSearch = debounce(q => {
+    if (q) renderSearchResults(q);
+    else   renderDefaultList();
+  }, SEARCH_DEBOUNCE_MS);
+
+  inp.addEventListener('input', () => {
+    const raw = inp.value;
+    searchQ   = raw.trim().toLowerCase();  // keep global in sync
+    clearBtn.classList.toggle('visible', raw.length > 0);
+    // Render immediately for short queries to feel instant,
+    // debounce for longer ones to avoid excessive Firestore reads.
+    if (raw.trim().length <= 1) {
+      clearTimeout(_searchDebounce);
+      renderUserList();
+    } else {
+      debouncedSearch(raw.trim());
+    }
+  });
+
+  // Clear button
+  clearBtn.addEventListener('click', () => {
+    inp.value = '';
+    searchQ   = '';
+    clearBtn.classList.remove('visible');
+    inp.focus();
+    _lastQuery = '';
+    renderDefaultList();
+  });
+
+  // Auto-focus on desktop when pane is visible (mobile gets focus via openChat)
+  if (window.innerWidth > 768) {
+    setTimeout(() => inp.focus(), 200);
+  }
+
+  // Keyboard: Escape clears search
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Escape') clearBtn.click();
+  });
+})();
+
+// ─── LOAD USERS ───────────────────────────────────────
+requireAuth(user=>{
+  currentUser=user; setupPresence(user.uid);
+
+  unsubUsers=db.collection('users').onSnapshot(snap=>{
+    allUsers=snap.docs.map(d=>d.data());
+    renderUserList();
+  });
+
+  // ── chat.html  ·  URL Param Handling ────────────────────────────
+  // Accepts three param names for backward compatibility:
+  //   ?receiverId=  → set by market.html Message button (canonical)
+  //   ?sellerId=    → set by previous market.html version
+  //   ?uid=         → legacy param
+  const params     = new URLSearchParams(window.location.search);
+  const receiverId = params.get('receiverId')
+                  || params.get('sellerId')
+                  || params.get('uid');
+
+  if (receiverId) {
+    // Don't open a chat with yourself
+    if (receiverId === user.uid) {
+      showToast("You can't chat with yourself 😄");
+    } else {
+      db.collection('users').doc(receiverId).get().then(snap => {
+        if (snap.exists) openChat(snap.data());
+        else showToast('User not found');
+      }).catch(() => showToast('Failed to load user'));
+    }
+  }
+
+  window.addEventListener('beforeunload',clearTyping);
+});
+
+// Build bottom nav inside the shell
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildBottomNav('chat');
+  const bn=document.querySelector('.bottom-nav');
+  if(bn) document.getElementById('bnav-slot').appendChild(bn);
+  applyTranslations();
+});
+</script>
+</body>
+</html>
